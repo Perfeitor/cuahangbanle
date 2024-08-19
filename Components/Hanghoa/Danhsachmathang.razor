@@ -1,0 +1,44 @@
+﻿@page "/Hanghoa/Danhsachmathang"
+
+@inject IMathangService mathangService
+
+<PageTitle>Danh sách mặt hàng</PageTitle>
+
+<MudPaper>
+    <MudDataGrid T="Mathang" SortMode="SortMode.None" Height="300px" FixedHeader="true" Breakpoint="Breakpoint.None" Bordered="true" Striped="true" Hover="true" RowClass="cursor-pointer" Items="mathangs" Dense="true" Style="white-space:nowrap; min-width: 100%;" Loading="loadingStatus" MultiSelection="true">
+        <Columns>
+            <PropertyColumn Resizable="false" Property="x => mathangs.IndexOf(x)+1" Title="STT" Sortable="false" />
+            <PropertyColumn Resizable="false" Property="d => d.Tensanpham" Title="Tên mặt hàng"/>
+            <PropertyColumn Resizable="false" Property="d => d.MaNCC" Title="Mã nhà cung cấp"/>
+            <PropertyColumn Resizable="false" Property="d => d.Manganhhang" Title="Mã ngành hàng" />
+            <PropertyColumn Resizable="false" Property="d => d.Gianhap" Title="Giá nhập"/>
+            <PropertyColumn Resizable="false" Property="d => d.Giaban" Title="Giá bán"/>
+            <PropertyColumn Resizable="false" Property="d => d.Tienlai" Title="Tiền lãi"/>
+            <PropertyColumn Resizable="false" Property="d => d.Tonkho" Title="Tồn kho" />
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="Mathang" />
+        </PagerContent>
+    </MudDataGrid>
+</MudPaper>
+
+@code {
+    #region Biến
+    List<Mathang> mathangs = new();
+    bool loadingStatus = false;
+    #endregion
+
+    #region Chạy lần đầu khi mở trang
+    protected override async Task OnInitializedAsync()
+    {
+        loadingStatus = true;
+        mathangs = await mathangService.GetAllMathang();
+        var t = mathangs;
+        loadingStatus = false;
+    }
+    #endregion
+
+    #region Phương thức
+
+    #endregion
+}

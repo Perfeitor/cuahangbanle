@@ -1,5 +1,9 @@
-using MudBlazor.Services;
+﻿using MudBlazor.Services;
 using cuahangbanle.Components;
+using cuahangbanle.DBData.Context;
+using Microsoft.EntityFrameworkCore;
+using cuahangbanle.DBData.Services;
+using MudBlazor.Translations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +13,16 @@ builder.Services.AddMudServices();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+//Kết nối database
+builder.Services.AddDbContext<DBContext>(options => options.UseSqlServer(builder.Configuration?.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Không tồn tại chuỗi kết nối")));
+
+//Bản địa hoá
+builder.Services.AddMudTranslations();
+
+//Đăng ký dịch vụ
+builder.Services.AddScoped<IDonvitinhService, DonvitinhService>();
+builder.Services.AddScoped<IMathangService, MathangService>();
 
 var app = builder.Build();
 
