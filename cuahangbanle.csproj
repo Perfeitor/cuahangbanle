@@ -18,10 +18,4 @@
     <PackageReference Include="MudBlazor" Version="7.*" />
     <PackageReference Include="MudBlazor.Translations" Version="1.2.0" />
   </ItemGroup>
-
-
-  <ItemGroup>
-    <Folder Include="Components\Sosach\" />
-    <Folder Include="Components\Taikhoan\" />
-  </ItemGroup>
 </Project>

@@ -4,18 +4,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace cuahangbanle.DBData.Services
 {
-    public class DonvitinhService : IDonvitinhService
+    public class NganhhangService : INganhhangService
     {
         private readonly DBContext db;
-        public DonvitinhService(DBContext _db)
+
+        public NganhhangService(DBContext _db)
         {
             db = _db;
         }
-
-        #region Get data
-        public async Task<List<Donvitinh>> GetAllDonvitinh()
+        #region Getdata
+        public async Task<List<Nganhhang>> GetAllNganhhang()
         {
-            return await db.Donvitinhs.ToListAsync();
+            return await db.Nganhhangs.ToListAsync();
         }
         #endregion
     }

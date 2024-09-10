@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using cuahangbanle.DBData.Context;
 
@@ -11,9 +12,11 @@ using cuahangbanle.DBData.Context;
 namespace cuahangbanle.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20240909081244_update_addpassword")]
+    partial class update_addpassword
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,7 +47,7 @@ namespace cuahangbanle.Migrations
 
                     b.HasKey("Madonhang");
 
-                    b.ToTable("Donhang");
+                    b.ToTable("Donhangs");
                 });
 
             modelBuilder.Entity("cuahangbanle.DBData.Models.Donvitinh", b =>
@@ -62,7 +65,7 @@ namespace cuahangbanle.Migrations
 
                     b.HasKey("Madonvitinh");
 
-                    b.ToTable("Donvitinh");
+                    b.ToTable("Donvitinhs");
                 });
 
             modelBuilder.Entity("cuahangbanle.DBData.Models.DsMatHang", b =>
@@ -77,7 +80,7 @@ namespace cuahangbanle.Migrations
 
                     b.HasIndex("Mamathang");
 
-                    b.ToTable("DsMatHang");
+                    b.ToTable("DsMatHangs");
                 });
 
             modelBuilder.Entity("cuahangbanle.DBData.Models.DsQuyen", b =>
@@ -92,7 +95,7 @@ namespace cuahangbanle.Migrations
 
                     b.HasIndex("Maquyen");
 
-                    b.ToTable("DsQuyen");
+                    b.ToTable("DsQuyens");
                 });
 
             modelBuilder.Entity("cuahangbanle.DBData.Models.Mathang", b =>
@@ -143,7 +146,7 @@ namespace cuahangbanle.Migrations
 
                     b.HasIndex("Manganhhang");
 
-                    b.ToTable("Mathang");
+                    b.ToTable("Mathangs");
                 });
 
             modelBuilder.Entity("cuahangbanle.DBData.Models.Nganhhang", b =>
@@ -170,7 +173,7 @@ namespace cuahangbanle.Migrations
 
                     b.HasKey("Manganhhang");
 
-                    b.ToTable("Nganhhang");
+                    b.ToTable("Nganhhangs");
                 });
 
             modelBuilder.Entity("cuahangbanle.DBData.Models.Nhacungcap", b =>
@@ -206,7 +209,7 @@ namespace cuahangbanle.Migrations
 
                     b.HasKey("MaNCC");
 
-                    b.ToTable("Nhacungcap");
+                    b.ToTable("Nhacungcaps");
                 });
 
             modelBuilder.Entity("cuahangbanle.DBData.Models.Nhomquyen", b =>
@@ -220,7 +223,7 @@ namespace cuahangbanle.Migrations
 
                     b.HasKey("Manhomquyen");
 
-                    b.ToTable("Nhomquyen");
+                    b.ToTable("Nhomquyens");
                 });
 
             modelBuilder.Entity("cuahangbanle.DBData.Models.Quyen", b =>
@@ -237,7 +240,7 @@ namespace cuahangbanle.Migrations
 
                     b.HasKey("Maquyen");
 
-                    b.ToTable("Quyen");
+                    b.ToTable("Quyens");
                 });
 
             modelBuilder.Entity("cuahangbanle.DBData.Models.Taikhoan", b =>
@@ -273,7 +276,7 @@ namespace cuahangbanle.Migrations
 
                     b.HasIndex("Manhomquyen");
 
-                    b.ToTable("Taikhoan");
+                    b.ToTable("Taikhoans");
                 });
 
             modelBuilder.Entity("cuahangbanle.DBData.Models.DsMatHang", b =>

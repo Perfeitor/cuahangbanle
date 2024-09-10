@@ -1,5 +1,7 @@
 ﻿@page "/"
 
+@inject NavigationManager NavigationManager
+
 <PageTitle>Home</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Hello, world!</MudText>
@@ -56,3 +58,10 @@
         More details
     </MudLink>
 </MudText>
+
+@code {
+    override protected void OnInitialized()
+    {
+        NavigationManager.NavigateTo("/Taikhoan/Quanlytaikhoan");
+    }
+}

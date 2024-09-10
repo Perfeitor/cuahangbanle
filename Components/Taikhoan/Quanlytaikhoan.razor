@@ -1,0 +1,52 @@
+﻿@page "/Taikhoan/Quanlytaikhoan"
+
+@inject ITaikhoanService taikhoanService
+@inject INhomquyenServicecs nhomquyenService
+
+<MudPaper Class="ma-2">
+    <MudTable Items="@taikhoans" Hover="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Danh sách tài khoản</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="@searchText" T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" OnAdornmentClick="@search" />
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Mã tài khoản</MudTh>
+            <MudTh>Tên tài khoản</MudTh>
+            <MudTh>Tên nhóm quyền</MudTh>
+            <MudTh>Người tạo</MudTh>
+            <MudTh>Ngày tạo</MudTh>
+            <MudTh>Người sửa</MudTh>
+            <MudTh>Ngày sửa</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.MaTK</MudTd>
+            <MudTd>@context.TenTk</MudTd>
+            <MudTd>@(nhomquyens.FirstOrDefault(x => x.Manhomquyen == context.Manhomquyen)?.Tennhomquyen ?? "")</MudTd>
+            <MudTd>@(taikhoans.FirstOrDefault(x => x.MaTK == context.Manguoitao)?.TenTk ?? "")</MudTd>
+            <MudTd>@(context.Ngaytao?.ToString() ?? "")</MudTd>
+            <MudTd>@(taikhoans.FirstOrDefault(x => x.MaTK == context.Manguoisua)?.TenTk ?? "")</MudTd>
+            <MudTd>@(context.Ngaytao?.ToString() ?? "")</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager/>
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    List<Taikhoan> taikhoans = new();
+    List<Nhomquyen> nhomquyens = new();
+    string searchText = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        taikhoans = await taikhoanService.GetAllTaikhoan();
+        nhomquyens = await nhomquyenService.GetAllNhomquyen();
+    }
+
+    void search()
+    {
+        
+    }
+}

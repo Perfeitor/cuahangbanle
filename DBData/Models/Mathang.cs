@@ -1,13 +1,16 @@
-﻿namespace cuahangbanle.DBData.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace cuahangbanle.DBData.Models
 {
+    [Table("Mathang")]
     public class Mathang
     {
-        public string Mamathang { get; set; }
-        public string Manganhhang { get; set; }
-        public string MaNCC { get; set; }
-        public string TenNCC { get; set; }
-        public string Tensanpham { get; set; }
-        public string Madonvitinh { get; set; }
+        public string Mamathang { get; set; } = "";
+        public string Manganhhang { get; set; } = "";
+        public string MaNCC { get; set; } = "";
+        public string TenNCC { get; set; } = "";
+        public string Tensanpham { get; set; } = "";
+        public string Madonvitinh { get; set; } = "";
         public int Tonkho { get; set; }
         public decimal Gianhap { get; set; }
         public decimal Giaban { get; set; }

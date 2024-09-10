@@ -1,11 +1,106 @@
 ﻿@page "/Hanghoa/Danhsachmathang"
 
 @inject IMathangService mathangService
+@inject INganhhangService nganhhangService
+@inject IDonvitinhService donvitinhService
+@inject INhacungcapService nhacungcapService
 
 <PageTitle>Danh sách mặt hàng</PageTitle>
 
 <MudPaper>
-    <MudDataGrid T="Mathang" SortMode="SortMode.None" Height="300px" FixedHeader="true" Breakpoint="Breakpoint.None" Bordered="true" Striped="true" Hover="true" RowClass="cursor-pointer" Items="mathangs" Dense="true" Style="white-space:nowrap; min-width: 100%;" Loading="loadingStatus" MultiSelection="true">
+    <MudGrid Spacing="1">
+        <MudItem>
+            <MudTextField ShrinkLabel ReadOnly="!edit" Label="Mã mặt hàng" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@mathangSelected.Mamathang"/>
+        </MudItem>
+        <MudItem>
+            <MudTextField ShrinkLabel ReadOnly="!edit" Label="Tên mặt hàng" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@mathangSelected.Tensanpham" />
+        </MudItem>
+        <MudItem>
+            <MudSelect ShrinkLabel ReadOnly="!edit" Label="Mã ngành hàng" Variant="Variant.Outlined" Margin="Margin.Dense" Dense @bind-Value="@mathangSelected.Manganhhang" @bind-Value:after="@ChangedNganhhang">
+                @foreach (var nganhhang in nganhhangs)
+                {
+                    <MudSelectItem Value="nganhhang.Manganhhang"/>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem>
+            <MudTextField ShrinkLabel Label="Tên ngành hàng" ReadOnly Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@TennganhhangSelected" />
+        </MudItem>
+        <MudItem>
+            <MudSelect ShrinkLabel ReadOnly="!edit" Label="Mã nhà cung cấp" Variant="Variant.Outlined" Margin="Margin.Dense" Dense @bind-Value="@mathangSelected.MaNCC" @bind-Value:after="ChangedNhacungcap">
+                @foreach (var nhacungcap in nhacungcaps)
+                {
+                    <MudSelectItem Value="nhacungcap.MaNCC" />
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem>
+            <MudTextField ShrinkLabel Label="Tên nhà cung cấp" ReadOnly Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="mathangSelected.TenNCC"/>
+        </MudItem>
+        <MudItem>
+            <MudSelect ReadOnly="!edit" ShrinkLabel Label="Mã đơn vị tính" Variant="Variant.Outlined" Margin="Margin.Dense" Dense @bind-Value="@mathangSelected.Madonvitinh" @bind-Value:after="ChangedDonvitinh">
+                @foreach (var donvi in donvitinhs)
+                {
+                    <MudSelectItem Value="donvi.Madonvitinh"/>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem>
+            <MudTextField ShrinkLabel Label="Tên đơn vị lẻ" ReadOnly Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="TenDonvitinhnho" />
+        </MudItem>
+        <MudItem>
+            /
+        </MudItem>
+        <MudItem>
+            <MudTextField ShrinkLabel Label="Tên đơn vị lớn" ReadOnly Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="TenDonvitinhlon" />
+        </MudItem>
+        <MudItem>
+            <MudTextField ReadOnly="!edit" ShrinkLabel Label="Giá nhập" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="mathangSelected.Gianhap" @bind-Value:after="TinhLai" />
+        </MudItem>
+        <MudItem>
+            <MudTextField ReadOnly="!edit" ShrinkLabel Label="Giá bán" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="mathangSelected.Giaban" @bind-Value:after="TinhLai" />
+        </MudItem>
+        <MudItem>
+            <MudTextField ReadOnly ShrinkLabel Label="%Lãi" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@mathangSelected.Phantramlai"/>
+        </MudItem>
+        <MudItem>
+            <MudTextField ReadOnly ShrinkLabel Label="Tiền lãi" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="mathangSelected.Tienlai" />
+        </MudItem>
+    </MudGrid>
+    <div class="mt-3">
+        <MudButton xs="4" Size="Size.Small" Disabled="@btnStatus" Class="mr-1 mb-2" Variant="Variant.Filled" OnClick="Add" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Thêm</MudButton>
+        <MudButton xs="4" Size="Size.Small" Disabled="@btnStatus" Class="mr-1 mb-2" Variant="Variant.Filled" OnClick="Edit" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Warning">Sửa</MudButton>
+        <MudButton xs="4" Size="Size.Small" Disabled="@btnStatus" Class="mr-1 mb-2" Variant="Variant.Filled" OnClick="Delete" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error">Xoá</MudButton>
+        <MudButton xs="6" Size="Size.Small" Disabled="@(!btnStatus)" Class="mr-1 mb-2" Variant="Variant.Filled" OnClick="Confirm" StartIcon="@Icons.Material.Filled.Check" Color="Color.Success">
+            @if (loadingStatus)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Đang xử lý</MudText>
+            }
+            else
+            {
+                <MudText>Xác nhận</MudText>
+            }
+        </MudButton>
+        <MudButton xs="6" Size="Size.Small" Disabled="@(!btnStatus)" Class="mr-1 mb-2" Variant="Variant.Filled" OnClick="Cancel" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Error">Huỷ bỏ</MudButton>
+    </div>
+    @if (!string.IsNullOrEmpty(successMessage) || !string.IsNullOrEmpty(errorMessage))
+    {
+        <MudContainer Class="mt-3">
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <MudAlert Severity="Severity.Success">@successMessage</MudAlert>
+            }
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <MudAlert Severity="Severity.Warning">@errorMessage</MudAlert>
+            }
+        </MudContainer>
+    }
+</MudPaper>
+
+<MudPaper>
+    <MudDataGrid T="Mathang" SortMode="SortMode.None" Height="300px" FixedHeader="true" Breakpoint="Breakpoint.None" Bordered="true" Striped="true" Hover="true" RowClass="cursor-pointer" Items="mathangs" Dense="true" Style="white-space:nowrap; min-width: 100%;" Loading="loadingStatus" MultiSelection="true" RowClick="rowclick">
         <Columns>
             <PropertyColumn Resizable="false" Property="x => mathangs.IndexOf(x)+1" Title="STT" Sortable="false" />
             <PropertyColumn Resizable="false" Property="d => d.Tensanpham" Title="Tên mặt hàng"/>
@@ -25,7 +120,20 @@
 @code {
     #region Biến
     List<Mathang> mathangs = new();
+    List<Nganhhang> nganhhangs = new();
+    List<Donvitinh> donvitinhs = new();
+    List<Nhacungcap> nhacungcaps = new();
+    string TennganhhangSelected = "";
+    string TenDonvitinhnho = "";
+    string TenDonvitinhlon = "";
+    Mathang mathangSelected = new();
+    Mathang mathangSelectedBackup = new();
     bool loadingStatus = false;
+    bool btnStatus = false;
+    bool create = false;
+    bool edit = false;
+    string errorMessage = "";
+    string successMessage = "";
     #endregion
 
     #region Chạy lần đầu khi mở trang
@@ -33,12 +141,155 @@
     {
         loadingStatus = true;
         mathangs = await mathangService.GetAllMathang();
-        var t = mathangs;
+        nganhhangs = await nganhhangService.GetAllNganhhang();
+        donvitinhs = await donvitinhService.GetAllDonvitinh();
+        nhacungcaps = await nhacungcapService.GetAllNhacungcap();
         loadingStatus = false;
     }
     #endregion
 
     #region Phương thức
+    private void rowclick(DataGridRowClickEventArgs<Mathang> Args)
+    {
+        mathangSelected = Args.Item;
+        TennganhhangSelected = nganhhangs.FirstOrDefault(d => d.Manganhhang == mathangSelected.Manganhhang)?.Tennganghang ?? "";
+    }
+    private void Add()
+    {
+        btnStatus = true;
+        create = true;
+        mathangSelected = new();
+        edit = true;
+        errorMessage = "";
+        successMessage = "";
+    }
+    private void Edit()
+    {
+        if (mathangSelected == null) return;
+        mathangSelectedBackup = mathangSelected;
+        btnStatus = true;
+        mathangSelected = new();
+        edit = true;
+        errorMessage = "";
+        successMessage = "";
+    }
+    private void Delete()
+    {
+        btnStatus = true;
+        errorMessage = "";
+        successMessage = "";
+    }
+    private async Task Confirm()
+    {
+        loadingStatus = true;
+        if (edit)
+        {
+            if (create)
+            {
+                if (!string.IsNullOrEmpty(mathangSelected.Mamathang) &&
+                    !string.IsNullOrEmpty(mathangSelected.Manganhhang) &&
+                    !string.IsNullOrEmpty(mathangSelected.MaNCC) &&
+                    !string.IsNullOrEmpty(mathangSelected.Madonvitinh))
+                {
+                    try
+                    {
+                        await mathangService.AddMathang(mathangSelected);
+                        mathangs = await mathangService.GetAllMathang();
+                        successMessage = "Thêm thành công";
+                    }
+                    catch (Exception e)
+                    {
+                        errorMessage = "Lỗi khi thêm mặt hàng: " + e.Message;
+                    }
+                }
+                else
+                {
+                    errorMessage = "Vui lòng điền đầy đủ thông tin";
+                }
+            }
+            else
+            {
+                try
+                {
+                    await mathangService.DeleteMathang(mathangSelected);
+                    if (!string.IsNullOrEmpty(mathangSelected.Mamathang) &&
+                    !string.IsNullOrEmpty(mathangSelected.Manganhhang) &&
+                    !string.IsNullOrEmpty(mathangSelected.MaNCC) &&
+                    !string.IsNullOrEmpty(mathangSelected.Madonvitinh))
+                    {
+                        await mathangService.EditMathang(mathangSelected);
+                        mathangs = await mathangService.GetAllMathang();
+                    }
+                    else
+                    {
+                        errorMessage = "Vui lòng điền đầy đủ thông tin";
+                    }
+                    successMessage = "Sửa thành công";
+                }
+                catch (Exception e)
+                {
+                    errorMessage = "Lỗi khi sửa mặt hàng: " + e.Message;
+                }
+            }
+        }
+        else
+        {
+            try
+            {
+                await mathangService.DeleteMathang(mathangSelected);
+                mathangs = await mathangService.GetAllMathang();
 
+                successMessage = "Xoá thành công";
+            }
+            catch (Exception e)
+            {
+                errorMessage = "Lỗi khi xoá mặt hàng: " + e.Message;
+            }
+        }
+        create = false;
+        btnStatus = false;
+        edit = false;
+        loadingStatus = false;
+    }
+    private void Cancel()
+    {
+        btnStatus = false;
+        edit = false;
+        create = false;
+        errorMessage = "";
+        successMessage = "";
+    }
+    public void ChangedNganhhang()
+    {
+        TennganhhangSelected = nganhhangs.FirstOrDefault(d => d.Manganhhang == mathangSelected.Manganhhang)?.Tennganghang ?? "";
+    }
+    public void ChangedNhacungcap()
+    {
+        mathangSelected.TenNCC = nhacungcaps.FirstOrDefault(d => d.MaNCC == mathangSelected.MaNCC)?.TenNCC ?? "";
+    }
+    public void ChangedDonvitinh()
+    {
+        var donvi = donvitinhs.FirstOrDefault(d => d.Madonvitinh == mathangSelected.Madonvitinh);
+        TenDonvitinhlon = donvi?.Donvilon ?? "";
+        TenDonvitinhnho = donvi?.Donvile ?? "";
+    }
+    public void TinhLai()
+    {
+        if (mathangSelected != null)
+            if (mathangSelected.Giaban != null && mathangSelected.Gianhap != null)
+            {
+                if (mathangSelected.Giaban == 0 || mathangSelected.Gianhap == 0)
+                {
+                    mathangSelected.Phantramlai = 0;
+                    mathangSelected.Tienlai = 0;
+                }
+                else
+                {
+                    mathangSelected.Phantramlai = Math.Round(((mathangSelected.Giaban / mathangSelected.Gianhap) - 1) * 100, 2);
+                    mathangSelected.Tienlai = Math.Round(mathangSelected.Giaban - mathangSelected.Gianhap, 2);
+                    
+                }
+            }
+    }
     #endregion
 }
