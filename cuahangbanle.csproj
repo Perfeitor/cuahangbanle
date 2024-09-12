@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Components\Models\**" />
+    <Content Remove="Components\Models\**" />
+    <EmbeddedResource Remove="Components\Models\**" />
+    <None Remove="Components\Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Data\app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 
@@ -16,14 +23,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.*" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*" />
     <PackageReference Include="MudBlazor" Version="7.*" />
     <PackageReference Include="Extensions.MudBlazor.StaticInput" Version="2.*" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <Folder Include="Components\Models\" />
   </ItemGroup>
 
 </Project>

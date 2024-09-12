@@ -1,14 +1,28 @@
 ﻿@page "/auth"
 
 @using Microsoft.AspNetCore.Authorization
+@using cuahangbanle.Components.Services
+
+@inject IUserService userService
 
 @attribute [Authorize]
 
 <PageTitle>Auth</PageTitle>
 
 
-<MudText Typo="Typo.h3" GutterBottom="true">You are authenticated!</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">You are authenticated! UserID: @(UserID) </MudText>
 
 <AuthorizeView>
     <MudText Class="mb-4">Hello @context.User.Identity?.Name!</MudText>
 </AuthorizeView>
+
+@code{
+    string? UserID;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userPrincipal = await userService.GetCurrentUserPrincipal();
+        UserID = userPrincipal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+        base.OnInitialized();
+    }
+}

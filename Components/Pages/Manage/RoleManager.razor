@@ -1,0 +1,17 @@
+﻿@page "/Manage/RoleManage"
+@using Microsoft.AspNetCore.Identity
+@inject RoleManager<IdentityRole> _roleManager
+
+<PageTitle>Quản lý quyền</PageTitle>
+
+<MudTextField @bind-Value="@roleName"/>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateRole">Thêm quyền</MudButton>
+
+@code {
+    string roleName = "";
+
+    private async Task CreateRole()
+    {
+        var result = await _roleManager.CreateAsync(new IdentityRole(roleName));
+    }
+}
