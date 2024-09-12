@@ -1,7 +1,4 @@
 ﻿@page "/counter"
-@using cuahangbanle.DBData.Services
-
-@inject IDonvitinhService service
 
 <PageTitle>Counter</PageTitle>
 
@@ -12,16 +9,6 @@
 <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="IncrementCount">Click me</MudButton>
 
 @code {
-
-
-
-    protected override async Task OnInitializedAsync()
-    {
-        var t = await service.GetAllDonvitinh();
-        var x = t;
-    }
-
-
     private int currentCount = 0;
 
     private void IncrementCount()

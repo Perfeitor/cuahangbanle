@@ -1,10 +1,10 @@
-﻿using MudBlazor.Services;
-using cuahangbanle.Components;
-using cuahangbanle.DBData.Context;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using cuahangbanle.DBData.Services;
-using MudBlazor.Translations;
-using cuahangbanle.DBData.Seed;
+using MudBlazor.Services;
+using cuahangbanle.Components;
+using cuahangbanle.Components.Account;
+using cuahangbanle.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,37 +15,42 @@ builder.Services.AddMudServices();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-//Kết nối database
-builder.Services.AddDbContext<DBContext>(options => options.UseSqlServer(builder.Configuration?.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Không tồn tại chuỗi kết nối")));
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<IdentityUserAccessor>();
+builder.Services.AddScoped<IdentityRedirectManager>();
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
-//Bản địa hoá
-builder.Services.AddMudTranslations();
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
+    .AddIdentityCookies();
 
-//Đăng ký dịch vụ
-builder.Services.AddScoped<IDonvitinhService, DonvitinhService>();
-builder.Services.AddScoped<IMathangService, MathangService>();
-builder.Services.AddScoped<INhacungcapService, NhacungcapService>();
-builder.Services.AddScoped<INganhhangService, NganhhangService>();
-builder.Services.AddScoped<INhomquyenServicecs, NhomquyenService>();
-builder.Services.AddScoped<IDonhangService, DonhangService>();
-builder.Services.AddScoped<ITaikhoanService, TaikhoanService>();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(connectionString));
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseMigrationsEndPoint();
+}
+else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
-}
-
-// Đảm bảo cơ sở dữ liệu được tạo và seed dữ liệu
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<DBContext>();
-    dbContext.Database.EnsureCreated();
-    await SeedData.Seed(dbContext);
 }
 
 app.UseHttpsRedirection();
@@ -55,5 +60,8 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// Add additional endpoints required by the Identity /Account Razor components.
+app.MapAdditionalIdentityEndpoints();
 
 app.Run();
