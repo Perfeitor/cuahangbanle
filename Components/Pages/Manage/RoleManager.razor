@@ -4,8 +4,14 @@
 
 <PageTitle>Quản lý quyền</PageTitle>
 
-<MudTextField @bind-Value="@roleName"/>
-<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateRole">Thêm quyền</MudButton>
+<MudGrid Justify="Justify.Center">
+    <MudItem xs="12" sm="8" md="6" lg="4">
+        <MudPaper Class="p-5">
+            <MudTextField  Margin="Margin.Dense" Variant="Variant.Outlined" @bind-Value="@roleName"/>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateRole">Thêm quyền</MudButton>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
 @code {
     string roleName = "";
