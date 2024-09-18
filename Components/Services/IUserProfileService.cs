@@ -7,6 +7,8 @@ namespace cuahangbanle.Components.Services
     {
         Task CreateUserProfile(UserProfile user);
         Task DeleteUserProfile(string UserProfileId);
+        Task<List<UserProfile>> GetAllProfile();
+        Task<UserProfile?> GetUserProfileById(string userId);
         Task<UserProfile> UpdateUserProfile(UserProfile UserProfile);
     }
 }

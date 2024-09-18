@@ -1,23 +1,92 @@
 ﻿@page "/Manage/RoleManage"
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using cuahangbanle.Components.Services
+@using cuahangbanle.DBData.Models
+@using cuahangbanle.Data
+
 @inject RoleManager<IdentityRole> _roleManager
+@inject UserManager<ApplicationUser> _userManager
+@inject IUserService userService
+@inject IUserProfileService userProfileService
 
 <PageTitle>Quản lý quyền</PageTitle>
 
-<MudGrid Justify="Justify.Center">
-    <MudItem xs="12" sm="8" md="6" lg="4">
-        <MudPaper Class="p-5">
-            <MudTextField  Margin="Margin.Dense" Variant="Variant.Outlined" @bind-Value="@roleName"/>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateRole">Thêm quyền</MudButton>
-        </MudPaper>
-    </MudItem>
-</MudGrid>
+<MudPaper Class="mb-4">
+    <MudGrid Spacing="1" Justify="Justify.Center">
+        <MudItem xs="12" sm="8" md="6" lg="4">
+                <MudTextField Margin="Margin.Dense" Variant="Variant.Outlined" @bind-Value="@roleName" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateRole">Thêm quyền</MudButton>
+        </MudItem>
+        <MudItem xs="12" sm="8" md="6" lg="4">
+            <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="AddAdmin">Thêm người dùng hiện tại vào role Admin</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper>
+    <MudTable Items="@roleViewList">
+        <HeaderContent>
+            <MudTh>Tên quyền</MudTh>
+            <MudTh>Số lượng người dùng</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Role.Name</MudTd>
+            <MudTd>@context.CountUser.ToString()</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
 
 @code {
     string roleName = "";
+    List<RoleView> roleViewList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetRoleInfo();
+    }
+
+    public async Task<int> CountUserByRole(string role)
+    {
+        var users = await _userManager.GetUsersInRoleAsync(role);
+        return users.Count;
+    }
 
     private async Task CreateRole()
     {
         var result = await _roleManager.CreateAsync(new IdentityRole(roleName));
+        await GetRoleInfo();
+        StateHasChanged();
+    }
+
+    public async Task GetRoleInfo()
+    {
+        roleViewList = new();
+        var roles = await _roleManager.Roles.ToListAsync();
+        foreach (var role in roles)
+        {
+            roleViewList.Add(new RoleView
+                {
+                    Role = role,
+                    CountUser = await CountUserByRole(role.Name ?? "")
+                });
+        }
+    }
+
+    private async Task AddAdmin()
+    {
+        var userPrincipal = await userService.GetCurrentUserPrincipal();
+        var UserID = userPrincipal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+        var user = await _userManager.FindByIdAsync(UserID ?? "");
+        if (user != null)
+        {
+            await _userManager.AddToRoleAsync(user, "Admin");
+        }
+    }
+
+    public class RoleView
+    {
+        public IdentityRole Role = new();
+        public int CountUser = 0;
     }
 }

@@ -1,25 +1,33 @@
-﻿@implements IDisposable
+﻿@using Microsoft.AspNetCore.Identity
+@using cuahangbanle.Components.Services
+@using cuahangbanle.Data
+@implements IDisposable
 
 @inject NavigationManager NavigationManager
+@inject IUserProfileService userProfileService
+@inject IUserService userService
+@inject UserManager<ApplicationUser> _userManager
 
 <MudNavMenu>
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Trang chủ</MudNavLink>
+    <MudNavLink Href="/Manage/UserManage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Quản lý người dùng</MudNavLink>
     <MudNavLink Href="/Manage/RoleManage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SettingsAccessibility">Quản lý quyền</MudNavLink>
-    <MudNavLink Href="auth" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Auth Required</MudNavLink>
+    <MudNavLink Href="auth" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Yêu cầu đăng nhập</MudNavLink>
+    <MudNavLink Href="AdminRequired" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Yêu cầu quyền Admin</MudNavLink>
     <AuthorizeView>
         <Authorized>
-            <MudNavLink Href="Account/Manage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">@context.User.Identity?.Name</MudNavLink>
+            <MudNavLink Href="Account/Manage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">@userName</MudNavLink>
             <form action="Account/Logout" method="post">
                 <AntiforgeryToken />
                 <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                 <button type="submit" class="mud-nav-link mud-ripple">
-                    <MudIcon Icon="@Icons.Material.Filled.Logout" Color="Color.Info" Class="mr-3"></MudIcon> Logout
+                    <MudIcon Icon="@Icons.Material.Filled.Logout" Color="Color.Info" Class="mr-3"></MudIcon> Đăng xuất
                 </button>
             </form>
         </Authorized>
         <NotAuthorized>
-            <MudNavLink Href="Account/Register" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Register</MudNavLink>
-            <MudNavLink Href="Account/Login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Password">Login</MudNavLink>
+            <MudNavLink Href="Account/Register" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Đăng ký</MudNavLink>
+            <MudNavLink Href="Account/Login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Password">Đăng nhập</MudNavLink>
         </NotAuthorized>
     </AuthorizeView>
 </MudNavMenu>
@@ -27,11 +35,13 @@
 
 @code {
     private string? currentUrl;
+    string userName = "";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+        userName = await GetUserName();
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -44,6 +54,14 @@
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
+
+    public async Task<string> GetUserName()
+    {
+        var userPrincipal = await userService.GetCurrentUserPrincipal();
+        var UserID = userPrincipal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+        var profile = await userProfileService.GetUserProfileById(UserID ?? "");
+        return profile?.Hoten ?? "";
+    }}
 }
 
 

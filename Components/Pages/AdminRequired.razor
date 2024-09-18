@@ -1,0 +1,30 @@
+﻿@page "/AdminRequired"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using cuahangbanle.Components.Services
+
+@inject IUserService userService
+@inject IUserProfileService userProfileService
+
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>AdminRequired</PageTitle>
+
+
+<MudText Typo="Typo.h3" GutterBottom="true">You are authenticated! UserID: @(UserID) </MudText>
+
+<AuthorizeView>
+    <MudText Class="mb-4">Hello @context.User.Identity?.Name!</MudText>
+</AuthorizeView>
+
+@code {
+    string? UserID;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userPrincipal = await userService.GetCurrentUserPrincipal();
+        UserID = userPrincipal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+        base.OnInitialized();
+    }
+}

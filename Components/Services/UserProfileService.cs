@@ -15,11 +15,18 @@ namespace cuahangbanle.Components.Services
         }
         #endregion
 
+        #region Get data
         public async Task<UserProfile?> GetUserProfileById(string userId)
         {
             return await _context.UserProfiles.FirstOrDefaultAsync(u => u.UserId == userId);
         }
+        public async Task<List<UserProfile>> GetAllProfile()
+        {
+            return await _context.UserProfiles.ToListAsync();
+        }
+        #endregion
 
+        #region CUD functions
         public async Task CreateUserProfile(UserProfile user)
         {
             _context.UserProfiles.Add(user);
@@ -42,5 +49,6 @@ namespace cuahangbanle.Components.Services
                 await _context.SaveChangesAsync();
             }
         }
+        #endregion
     }
 }

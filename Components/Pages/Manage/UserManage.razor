@@ -1,0 +1,76 @@
+﻿@page "/Manage/UserManage"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using cuahangbanle.Components.Services
+@using cuahangbanle.DBData.Models
+@using cuahangbanle.Data
+
+@inject RoleManager<IdentityRole> _roleManager
+@inject UserManager<ApplicationUser> _userManager
+@inject IUserService userService
+@inject IUserProfileService userProfileService
+
+<PageTitle>Quản lý Người dùng</PageTitle>
+
+<MudTable Items="@userFullInfoList">
+    <HeaderContent>
+        <MudTh>Email</MudTh>
+        <MudTh>Tên người dùng</MudTh>
+        <MudTh>Quyền</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTh>@(context.User.Email ?? "")</MudTh>
+        <MudTh>@(context.Profile.Hoten ?? "")</MudTh>
+        <MudTh>@RoleListString(context.Roles)</MudTh>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    string roleName = "";
+    List<UserFullInfo> userFullInfoList = new();
+    List<ApplicationUser> applicationUsers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        applicationUsers = await _userManager.Users.ToListAsync();
+        foreach (var applicationUser in applicationUsers)
+        {
+            userFullInfoList.Add(new UserFullInfo
+                {
+                    User = applicationUser,
+                    Roles = (List<string>)await _userManager.GetRolesAsync(applicationUser) ?? new(),
+                    Profile = await userProfileService.GetUserProfileById(applicationUser.Id) ?? new()
+                });
+        }
+    }
+
+    public string RoleListString(List<string> Roles)
+    {
+        if (Roles.Count == 0)
+            return "Không có quyền";
+        return string.Join(", ", Roles);
+    }
+
+    private async Task CreateRole()
+    {
+        var result = await _roleManager.CreateAsync(new IdentityRole(roleName));
+    }
+
+    private async Task AddAdmin()
+    {
+        var userPrincipal = await userService.GetCurrentUserPrincipal();
+        var UserID = userPrincipal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+        var user = await _userManager.FindByIdAsync(UserID ?? "");
+        if (user != null)
+        {
+            await _userManager.AddToRoleAsync(user, "Admin");
+        }
+    }
+
+    public class UserFullInfo
+    {
+        public UserProfile Profile = new();
+        public ApplicationUser User = new();
+        public List<string> Roles  = new();
+    }
+}
