@@ -20,6 +20,10 @@ namespace cuahangbanle.Components.Services
         {
             return await _context.UserProfiles.FirstOrDefaultAsync(u => u.UserId == userId);
         }
+        public async Task<UserProfile?> GetUserProfileByProfileId(string Id)
+        {
+            return await _context.UserProfiles.FirstOrDefaultAsync(u => u.ProfileId.ToString() == Id);
+        }
         public async Task<List<UserProfile>> GetAllProfile()
         {
             return await _context.UserProfiles.ToListAsync();
