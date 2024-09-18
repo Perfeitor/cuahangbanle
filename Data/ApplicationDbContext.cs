@@ -4,8 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace cuahangbanle.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    {
+    }
+
     #region DbSet
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<Nganhhang> Nganhhangs { get; set; }
@@ -21,7 +25,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         base.OnModelCreating(modelBuilder);
         #region User
         modelBuilder.Entity<UserProfile>()
-            .HasKey(t => t.UserId);
+            .HasKey(t => t.ProfileId);
+
+        modelBuilder.Entity<UserProfile>()
+            .HasOne(t => t.User)
+            .WithOne()
+            .HasForeignKey<UserProfile>(t => t.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         #endregion
 
         #region Nganhhang
