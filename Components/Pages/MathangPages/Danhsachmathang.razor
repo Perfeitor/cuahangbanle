@@ -8,9 +8,26 @@
         <ToolBarContent>
             <MudText Typo="Typo.h5">Danh sách mặt hàng</MudText>
             <MudSpacer/>
-            <MudTextField T="string" Label="Tìm kiếm" ShrinkLabel/>
+            <MudTextField T="string" Label="Tìm kiếm"/>
         </ToolBarContent>
-
+        <HeaderContent>
+            <MudTh>STT</MudTh>
+            <MudTh>Mã mặt hàng</MudTh>
+            <MudTh>Tên mặt hàng</MudTh>
+            <MudTh>Đơn giá</MudTh>
+            <MudTh>Đơn vị</MudTh>
+            <MudTh>Ngành hàng</MudTh>
+            <MudTh>Tồn kho</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@(mathangs.IndexOf(context) + 1)</MudTd>
+            <MudTd>@context.Mamathang</MudTd>
+            <MudTd>@context.Tensanpham</MudTd>
+            <MudTd>@context.Giaban</MudTd>
+            <MudTd>@context.Donvitinh</MudTd>
+            <MudTd>@context.Nganhhang.Tennganghang</MudTd>
+            <MudTd>@context.Tonkho</MudTd>
+        </RowTemplate>
     </MudTable>
 </MudPaper>
 
