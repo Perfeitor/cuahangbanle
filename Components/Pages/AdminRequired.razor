@@ -7,15 +7,18 @@
 @inject IUserService userService
 @inject IUserProfileService userProfileService
 
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize]
 
 <PageTitle>AdminRequired</PageTitle>
 
-
-<MudText Typo="Typo.h3" GutterBottom="true">Bạn đã đăng nhập dưới quyền quản trị viên</MudText>
-
-<AuthorizeView>
-    <MudText Class="mb-4">Hello @context.User.Identity?.Name!</MudText>
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <MudText Typo="Typo.h3" GutterBottom="true">Bạn đã đăng nhập dưới quyền quản trị viên</MudText>
+        <MudText Class="mb-4">Hello @context.User.Identity?.Name!</MudText>
+    </Authorized>
+    <NotAuthorized>
+        <MudAlert Severity="Severity.Warning">Bạn cần có quyền Admin để truy cập trang này</MudAlert>
+    </NotAuthorized>
 </AuthorizeView>
 
 @code {

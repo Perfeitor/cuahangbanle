@@ -9,11 +9,15 @@
 @inject UserManager<ApplicationUser> _userManager
 @inject IUserService userService
 @inject IUserProfileService userProfileService
+@inject ISnackbar Snackbar
 
 <PageTitle>Quản lý quyền</PageTitle>
 
 <MudPaper Class="mb-4 py-2 px-4">
     <MudGrid Spacing="1">
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6">Tạo quyền mới</MudText>
+        </MudItem>
         <MudItem xs="10" sm="8" md="6" lg="4">
             <MudTextField Label="Nhập tên quyền" ShrinkLabel Margin="Margin.Dense" Variant="Variant.Outlined" @bind-Value="@roleName" />
         </MudItem>
@@ -52,9 +56,14 @@
     string roleName = "";
     string searchString = "";
     List<RoleView> roleViewList = new();
+    List<string> currentUserRoles = new();
 
     protected override async Task OnInitializedAsync()
-    {
+    { 
+        var principal = await userService.GetCurrentUserPrincipal();
+        var currentUserID = principal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
+        var currentUser = await _userManager.FindByIdAsync(currentUserID ?? "") ?? new();
+        currentUserRoles = (await _userManager.GetRolesAsync(currentUser)).ToList();
         await GetRoleInfo();
     }
 
@@ -63,6 +72,15 @@
         if (role.Role.Name == "Admin")
             return true;
         return false;
+    }
+
+    void CallSnackBar(string text, Severity severity, Variant variant)
+    {
+        Snackbar.Add(text, severity, config =>
+        {
+            config.SnackbarVariant = variant;
+            config.VisibleStateDuration = 1000;
+        });
     }
 
     public bool FilterFunc(RoleView role)
@@ -78,6 +96,11 @@
 
     public async Task DeleteRole(RoleView role)
     {
+        if (!currentUserRoles.Contains("Admin"))
+        {
+            CallSnackBar("Chỉ Admin mới có quyền thực hiện thao tác này", Severity.Error, Variant.Filled);
+            return;
+        }
         await _roleManager.DeleteAsync(role.Role);
         await GetRoleInfo();
         StateHasChanged();
@@ -91,6 +114,11 @@
 
     private async Task CreateRole()
     {
+        if (!currentUserRoles.Contains("Admin"))
+        {
+            CallSnackBar("Chỉ Admin mới có quyền thực hiện thao tác này", Severity.Error, Variant.Filled);
+            return;
+        }
         var result = await _roleManager.CreateAsync(new IdentityRole(roleName));
         await GetRoleInfo();
         StateHasChanged();
