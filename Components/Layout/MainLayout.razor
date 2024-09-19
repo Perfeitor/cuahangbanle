@@ -1,4 +1,10 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager _nav
+@inject RoleManager<IdentityRole> _roleManager
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -15,7 +21,24 @@
         <NavMenu />
     </MudDrawer>
     <MudMainContent Class="mt-16 pa-4">
-        @Body
+        <AuthorizeView @attributes="@authorizeAttributes">
+            <NotAuthorized>
+                @if (_nav.Uri.Contains("/Account"))
+
+                {
+                    @Body
+                }
+
+                else
+
+                {
+                    <MudAlert Severity="Severity.Error">Bạn không có quyền truy cập trang này</MudAlert>
+                }
+            </NotAuthorized>
+            <Authorized>
+                @Body
+            </Authorized>
+        </AuthorizeView>
     </MudMainContent>
 </MudLayout>
 
@@ -27,13 +50,80 @@
 </div>
 
 @code {
+
     private bool _drawerOpen = true;
 
-    private void DrawerToggle()
+
+
+
+
+
+
+    private Dictionary<string, object> authorizeAttributes = new Dictionary<string, object>();
+
+
+
+
+
+
+
+    private string roles = "";
+
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+
+
+
     {
-        _drawerOpen = !_drawerOpen;
+
+
+
+        var roleList = await _roleManager.Roles.Select(r => r.Name ?? "").ToListAsync();
+
+
+
+        roles = string.Join(", ", roleList);
+
+
+
+
+
+
+
+        authorizeAttributes["Roles"] = roles;
+
+
+
     }
 
+
+
+
+
+
+
+
+
+
+
+    private void DrawerToggle()
+
+
+
+    {
+
+
+
+        _drawerOpen = !_drawerOpen;
+
+
+
+    }
 }
 
 

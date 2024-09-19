@@ -1,4 +1,5 @@
-﻿@page "/Manage/UserManage/{id}"
+﻿@page "/Admin/UserManage/{id}"
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using cuahangbanle.Components.Services
@@ -8,7 +9,11 @@
 @inject UserManager<ApplicationUser> _userManager
 @inject RoleManager<IdentityRole> _roleManager
 @inject IUserProfileService userProfileService
+@inject IUserService UserService
+@inject AuthenticationStateProvider auth
 @inject NavigationManager navigation
+
+@attribute [Authorize(Roles = "Admin")]
 
 <MudGrid Justify="Justify.Center">
     <MudItem xs="12" sm="10" md="8" lg="6">
@@ -47,6 +52,7 @@
     public string? id { get; set; }
     public UserView userView = new();
     public List<IdentityRole> roles = new();
+    public string currentUserId = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -54,6 +60,9 @@
         userView.User = await _userManager.FindByIdAsync(userView.Profile.UserId ?? "") ?? new();
         userView.Roles = (List<string>)(await _userManager.GetRolesAsync(userView.User));
         roles = await _roleManager.Roles.ToListAsync();
+        var authState = await auth.GetAuthenticationStateAsync();
+        var principal = authState.User;
+        currentUserId = principal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value ?? "";
     }
 
     public void CancelAndBack()
@@ -63,6 +72,8 @@
 
     public async Task SaveChanged()
     {
+        userView.Profile.Manguoisua = currentUserId;
+        userView.Profile.Ngaysua = DateTime.Now;
         await userProfileService.UpdateUserProfile(userView.Profile);
         await _userManager.UpdateAsync(userView.User);
         var oldRoles = await _userManager.GetRolesAsync(userView.User);

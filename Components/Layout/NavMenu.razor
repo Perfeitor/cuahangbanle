@@ -10,9 +10,10 @@
 @inject AuthenticationStateProvider auth
 
 <MudNavMenu>
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Trang chủ</MudNavLink>
-    <MudNavLink Href="/Manage/UserManage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Quản lý người dùng</MudNavLink>
-    <MudNavLink Href="/Manage/RoleManage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SettingsAccessibility">Quản lý quyền</MudNavLink>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+    <MudNavLink Href="/Admin/UserManage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Quản lý người dùng</MudNavLink>
+    <MudNavLink Href="/Admin/RoleManage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SettingsAccessibility">Quản lý quyền</MudNavLink>
+    <MudNavLink Href="/Mathang/Danhsachmathang" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ViewList">Danh sách mặt hàng</MudNavLink>
     <MudNavLink Href="auth" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Yêu cầu đăng nhập</MudNavLink>
     <MudNavLink Href="AdminRequired" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Yêu cầu quyền Admin</MudNavLink>
     <AuthorizeView>

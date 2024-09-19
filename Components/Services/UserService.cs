@@ -18,5 +18,6 @@ namespace cuahangbanle.Components.Services
             var authState = await auth.GetAuthenticationStateAsync();
             return authState.User;
         }
+
     }
 }

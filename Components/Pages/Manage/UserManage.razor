@@ -1,4 +1,4 @@
-﻿@page "/Manage/UserManage"
+﻿@page "/Admin/UserManage"
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using System.Security.Claims
@@ -38,14 +38,14 @@
                         @if (!isAdmin(context))
                         {
                             <MudNavLink>
-                                <MudButton OnClick="@(() => NavigateToUserDetail(context.Profile.ProfileId.ToString()))">Xem chi tiết</MudButton>
+                                <MudButton Disabled="@isDisable" OnClick="@(() => NavigateToUserDetail(context.Profile.ProfileId.ToString()))">Xem chi tiết</MudButton>
                             </MudNavLink>
                             <MudNavLink>
-                                <MudButton OnClick="@(() => DeleteAccount(context))">Xoá</MudButton>
+                                <MudButton Disabled="@isDisable" OnClick="@(() => DeleteAccount(context))">Xoá</MudButton>
                             </MudNavLink>
                         }
                         <MudNavLink>
-                            <MudButton>Đổi mật khẩu</MudButton>
+                            <MudButton Disabled="@isDisable">Đổi mật khẩu</MudButton>
                         </MudNavLink>
                     </MudNavMenu>
                 </ChildContent>
@@ -60,11 +60,16 @@
     List<ApplicationUser> applicationUsers = new();
     ClaimsPrincipal currentUserPrincipal = new();
     string userId = "";
+    bool isDisable = false;
 
     protected override async Task OnInitializedAsync()
     {
         currentUserPrincipal = await userService.GetCurrentUserPrincipal();
         userId = currentUserPrincipal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value ?? "";
+        var user = await _userManager.FindByIdAsync(userId);
+        var roles = await _userManager.GetRolesAsync(user);
+        if (!roles.Contains("Admin"))
+            isDisable = true;
         await GetData();
     }
 

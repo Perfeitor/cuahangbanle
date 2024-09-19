@@ -2,16 +2,19 @@
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
+@using cuahangbanle.Components.Services
+@using cuahangbanle.DBData.Models
 @using cuahangbanle.Data
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
+@inject IUserProfileService userProfileService
 
 <PageTitle>Profile</PageTitle>
 
-<MudText Typo="Typo.h6" GutterBottom="true">Profile</MudText>
+<MudText Typo="Typo.h6" GutterBottom="true">Thông tin</MudText>
 
 <StatusMessage />
 
@@ -20,23 +23,28 @@
 
     <MudGrid>
         <MudItem md="12">
-            <MudStaticTextField Value="@username" Label="Username" Disabled="true" Placeholder="Please choose your username." />
+            <MudStaticTextField Value="@username" Label="Tên đăng nhập" Disabled="true" />
+        </MudItem>
+        <MudItem md="12">
+            <MudStaticTextField For="@(() => Input.Hoten)" @bind-Value="Input.Hoten" Label="Tên người dùng" ShrinkLabel/>
         </MudItem>
         <MudItem md="12">
             <MudStaticTextField For="@(() => Input.PhoneNumber)" @bind-Value="Input.PhoneNumber"
-                                Label="Phone Number" HelperText="Please enter your phone number."
+                                Label="Số điện thoại"
                                 UserAttributes="@(new() { { "autocomplete", "tel-national" } } )" />
         </MudItem>
         <MudItem md="12">
-            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">Save</MudStaticButton>
+            <MudStaticButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" FormAction="FormAction.Submit">Lưu</MudStaticButton>
         </MudItem>
     </MudGrid>
 </EditForm>
 
 @code {
+
     private ApplicationUser user = default!;
     private string? username;
     private string? phoneNumber;
+    private UserProfile userProfile = default!;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -49,7 +57,10 @@
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         username = await UserManager.GetUserNameAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
+        var id = await UserManager.GetUserIdAsync(user);
+        userProfile = await userProfileService.GetUserProfileById(id);
 
+        Input.Hoten = userProfile.Hoten;
         Input.PhoneNumber ??= phoneNumber;
     }
 
@@ -63,7 +74,8 @@
                 RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
             }
         }
-
+        userProfile.Hoten = Input.Hoten;
+        await userProfileService.UpdateUserProfile(userProfile);
         await SignInManager.RefreshSignInAsync(user);
         RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
     }
@@ -73,5 +85,7 @@
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
+
+        public string? Hoten { get; set; }
     }
 }

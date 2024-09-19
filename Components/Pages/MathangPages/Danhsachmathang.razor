@@ -1,0 +1,19 @@
+﻿@page "/Mathang/Danhsachmathang"
+@using cuahangbanle.DBData.Models
+
+<PageTitle>Danh sách mặt hàng</PageTitle>
+
+<MudPaper>
+    <MudTable Items="mathangs">
+        <ToolBarContent>
+            <MudText Typo="Typo.h5">Danh sách mặt hàng</MudText>
+            <MudSpacer/>
+            <MudTextField T="string" Label="Tìm kiếm" ShrinkLabel/>
+        </ToolBarContent>
+
+    </MudTable>
+</MudPaper>
+
+@code {
+    List<Mathang> mathangs = new();
+}
