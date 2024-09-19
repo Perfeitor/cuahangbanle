@@ -7,6 +7,7 @@
 @inject IUserProfileService userProfileService
 @inject IUserService userService
 @inject UserManager<ApplicationUser> _userManager
+@inject AuthenticationStateProvider auth
 
 <MudNavMenu>
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Trang chủ</MudNavLink>
@@ -57,11 +58,13 @@
 
     public async Task<string> GetUserName()
     {
-        var userPrincipal = await userService.GetCurrentUserPrincipal();
+        var authState = await auth.GetAuthenticationStateAsync();
+        var userPrincipal = authState.User;
         var UserID = userPrincipal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
         var profile = await userProfileService.GetUserProfileById(UserID ?? "");
         return profile?.Hoten ?? "";
-    }}
+    }
+}
 }
 
 

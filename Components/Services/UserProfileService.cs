@@ -39,6 +39,7 @@ namespace cuahangbanle.Components.Services
 
         public async Task<UserProfile> UpdateUserProfile(UserProfile UserProfile)
         {
+            
             _context.UserProfiles.Update(UserProfile);
             await _context.SaveChangesAsync();
             return UserProfile;

@@ -1,0 +1,80 @@
+﻿@page "/Manage/UserManage/{id}"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using cuahangbanle.Components.Services
+@using cuahangbanle.DBData.Models
+@using cuahangbanle.Data
+
+@inject UserManager<ApplicationUser> _userManager
+@inject RoleManager<IdentityRole> _roleManager
+@inject IUserProfileService userProfileService
+@inject NavigationManager navigation
+
+<MudGrid Justify="Justify.Center">
+    <MudItem xs="12" sm="10" md="8" lg="6">
+        <MudPaper Class="p-2">
+            <MudGrid Spacing="1">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5">Thông tin tài khoản</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField Variant="Variant.Outlined" Label="Họ tên" ShrinkLabel @bind-Value="@userView.Profile.Hoten" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField Variant="Variant.Outlined" Label="Email" ShrinkLabel @bind-Value="@userView.User.Email" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect Variant="Variant.Outlined" Label="Quyền tài khoản" ShrinkLabel MultiSelection @bind-SelectedValues="@userView.Roles">
+                        @foreach (var role in roles)
+                        {
+                            <MudSelectItem Value="@role.Name" />
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth OnClick="@SaveChanged">Lưu</MudButton>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled" Color="Color.Error" FullWidth OnClick="@CancelAndBack">Huỷ và quay về</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public string? id { get; set; }
+    public UserView userView = new();
+    public List<IdentityRole> roles = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        userView.Profile = await userProfileService.GetUserProfileByProfileId(id ?? "") ?? new();
+        userView.User = await _userManager.FindByIdAsync(userView.Profile.UserId ?? "") ?? new();
+        userView.Roles = (List<string>)(await _userManager.GetRolesAsync(userView.User));
+        roles = await _roleManager.Roles.ToListAsync();
+    }
+
+    public void CancelAndBack()
+    {
+        navigation.NavigateTo("/Manage/UserManage");
+    }
+
+    public async Task SaveChanged()
+    {
+        await userProfileService.UpdateUserProfile(userView.Profile);
+        await _userManager.UpdateAsync(userView.User);
+        var oldRoles = await _userManager.GetRolesAsync(userView.User);
+        await _userManager.RemoveFromRolesAsync(userView.User, oldRoles);
+        await _userManager.AddToRolesAsync(userView.User, userView.Roles);
+        navigation.NavigateTo("/Manage/UserManage");
+    }
+
+    public class UserView
+    {
+        public ApplicationUser User = new();
+        public IEnumerable<string> Roles = new HashSet<string>();
+        public UserProfile Profile = new();
+    }
+}

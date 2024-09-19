@@ -1,6 +1,8 @@
 ﻿@page "/Manage/UserManage"
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+@using cuahangbanle.Components.Dialogs
 @using cuahangbanle.Components.Services
 @using cuahangbanle.DBData.Models
 @using cuahangbanle.Data
@@ -9,6 +11,9 @@
 @inject UserManager<ApplicationUser> _userManager
 @inject IUserService userService
 @inject IUserProfileService userProfileService
+@inject NavigationManager navigate
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Quản lý Người dùng</PageTitle>
 
@@ -17,11 +22,35 @@
         <MudTh>Email</MudTh>
         <MudTh>Tên người dùng</MudTh>
         <MudTh>Quyền</MudTh>
+        <MudTh>Quản lý</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTh>@(context.User.Email ?? "")</MudTh>
-        <MudTh>@(context.Profile.Hoten ?? "")</MudTh>
-        <MudTh>@RoleListString(context.Roles)</MudTh>
+        <MudTd>@(context.User.Email ?? "")</MudTd>
+        <MudTd>@(context.Profile.Hoten ?? "")</MudTd>
+        <MudTd>@RoleListString(context.Roles)</MudTd>
+        <MudTd>
+            <MudMenu AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
+                <ActivatorContent>
+                    <MudIconButton Icon="@Icons.Material.Outlined.MoreVert" />
+                </ActivatorContent>
+                <ChildContent>
+                    <MudNavMenu>
+                        @if (!isAdmin(context))
+                        {
+                            <MudNavLink>
+                                <MudButton OnClick="@(() => NavigateToUserDetail(context.Profile.ProfileId.ToString()))">Xem chi tiết</MudButton>
+                            </MudNavLink>
+                            <MudNavLink>
+                                <MudButton OnClick="@(() => DeleteAccount(context))">Xoá</MudButton>
+                            </MudNavLink>
+                        }
+                        <MudNavLink>
+                            <MudButton>Đổi mật khẩu</MudButton>
+                        </MudNavLink>
+                    </MudNavMenu>
+                </ChildContent>
+            </MudMenu>
+        </MudTd>
     </RowTemplate>
 </MudTable>
 
@@ -29,9 +58,17 @@
     string roleName = "";
     List<UserFullInfo> userFullInfoList = new();
     List<ApplicationUser> applicationUsers = new();
+    ClaimsPrincipal currentUserPrincipal = new();
+    string userId = "";
 
     protected override async Task OnInitializedAsync()
     {
+        currentUserPrincipal = await userService.GetCurrentUserPrincipal();
+        userId = currentUserPrincipal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value ?? "";
+        await GetData();
+    }
+
+    public async Task GetData() {
         applicationUsers = await _userManager.Users.ToListAsync();
         foreach (var applicationUser in applicationUsers)
         {
@@ -44,6 +81,49 @@
         }
     }
 
+    public async Task DeleteAccount(UserFullInfo fullInfo)
+    {
+
+        if(userId == fullInfo.User.Id)
+        {
+            CallSnackBar("Không thể xoá tài khoản của chính mình", Severity.Error, Variant.Filled);
+            return;
+        }
+        var parameters = new DialogParameters
+        {
+            { "TextMess", "xoá tài khoản" }
+        };
+        var options = new DialogOptions();
+        var dialog = DialogService.Show<Confirm>("Xác nhận", parameters, options);
+        var result = await dialog.Result;
+        if(!result?.Canceled ?? false)
+        {
+            await _userManager.DeleteAsync(fullInfo.User);
+        }
+        await GetData();
+        return;
+    }
+
+    void CallSnackBar(string text, Severity severity, Variant variant)
+    {
+        Snackbar.Add(text , severity, config => {
+            config.SnackbarVariant = variant;
+            config.VisibleStateDuration = 1000;
+        });
+    }
+
+    public bool isAdmin(UserFullInfo user)
+    {
+        if (user.User.Email == ("admin@gmail.com"))
+            return true;
+        return false;
+    }
+
+    public void NavigateToUserDetail(string id)
+    {
+        navigate.NavigateTo($"/Manage/UserManage/{id}");
+    }
+
     public string RoleListString(List<string> Roles)
     {
         if (Roles.Count == 0)
@@ -51,26 +131,10 @@
         return string.Join(", ", Roles);
     }
 
-    private async Task CreateRole()
-    {
-        var result = await _roleManager.CreateAsync(new IdentityRole(roleName));
-    }
-
-    private async Task AddAdmin()
-    {
-        var userPrincipal = await userService.GetCurrentUserPrincipal();
-        var UserID = userPrincipal.FindFirst(c => c.Type.Contains("nameidentifier"))?.Value;
-        var user = await _userManager.FindByIdAsync(UserID ?? "");
-        if (user != null)
-        {
-            await _userManager.AddToRoleAsync(user, "Admin");
-        }
-    }
-
     public class UserFullInfo
     {
         public UserProfile Profile = new();
         public ApplicationUser User = new();
-        public List<string> Roles  = new();
+        public List<string> Roles = new();
     }
 }

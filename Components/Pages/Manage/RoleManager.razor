@@ -12,38 +12,75 @@
 
 <PageTitle>Quản lý quyền</PageTitle>
 
-<MudPaper Class="mb-4">
-    <MudGrid Spacing="1" Justify="Justify.Center">
-        <MudItem xs="12" sm="8" md="6" lg="4">
-                <MudTextField Margin="Margin.Dense" Variant="Variant.Outlined" @bind-Value="@roleName" />
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateRole">Thêm quyền</MudButton>
+<MudPaper Class="mb-4 py-2 px-4">
+    <MudGrid Spacing="1">
+        <MudItem xs="10" sm="8" md="6" lg="4">
+            <MudTextField Label="Nhập tên quyền" ShrinkLabel Margin="Margin.Dense" Variant="Variant.Outlined" @bind-Value="@roleName" />
         </MudItem>
-        <MudItem xs="12" sm="8" md="6" lg="4">
+        <MudItem Class="align-content-center mt-1" xs="2" sm="2" md="2" lg="2">
+            <MudButton Class="text-nowrap" Variant="Variant.Filled" Color="Color.Primary" OnClick="@CreateRole">Thêm quyền</MudButton>
+        </MudItem>
+        <MudItem Class="d-none" xs="12" sm="8" md="6" lg="4">
             <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="AddAdmin">Thêm người dùng hiện tại vào role Admin</MudButton>
         </MudItem>
     </MudGrid>
 </MudPaper>
 
-<MudPaper>
-    <MudTable Items="@roleViewList">
+<MudPaper Class="py-2 px-4">
+    <MudTable Items="@roleViewList" Dense Hover Filter="@FilterFunc" Bordered FixedHeader Striped>
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Danh sách quyền</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString" Placeholder="Tìm kiếm" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
         <HeaderContent>
             <MudTh>Tên quyền</MudTh>
             <MudTh>Số lượng người dùng</MudTh>
+            <MudTh>Quản lý</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd>@context.Role.Name</MudTd>
             <MudTd>@context.CountUser.ToString()</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Filled" Disabled="@isDisabled(context)" Color="Color.Error" OnClick="@(() => DeleteRole(context))">Xoá</MudButton>
+            </MudTd>
         </RowTemplate>
     </MudTable>
 </MudPaper>
 
 @code {
     string roleName = "";
+    string searchString = "";
     List<RoleView> roleViewList = new();
 
     protected override async Task OnInitializedAsync()
     {
         await GetRoleInfo();
+    }
+
+    public bool isDisabled(RoleView role)
+    {
+        if (role.Role.Name == "Admin")
+            return true;
+        return false;
+    }
+
+    public bool FilterFunc(RoleView role)
+    {
+        if (string.IsNullOrEmpty(searchString))
+            return true;
+        if (role.Role.Name?.ToUpper().Contains(searchString.ToUpper()) == true)
+            return true;
+        if (role.CountUser.ToString().ToUpper().Contains(searchString.ToUpper()) == true)
+            return true;
+        return false;
+    }
+
+    public async Task DeleteRole(RoleView role)
+    {
+        await _roleManager.DeleteAsync(role.Role);
+        await GetRoleInfo();
+        StateHasChanged();
     }
 
     public async Task<int> CountUserByRole(string role)

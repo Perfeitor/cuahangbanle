@@ -1,0 +1,23 @@
+﻿@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudText>Bạn có chắc rằng muốn @TextMess không?</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit">Xác nhận</MudButton>
+        <MudButton Color="Color.Secondary" OnClick="Cancel">Huỷ</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public string TextMess { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; } = default!;
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => MudDialog.Cancel();
+}
