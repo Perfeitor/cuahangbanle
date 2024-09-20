@@ -4,11 +4,11 @@
 <PageTitle>Danh sách mặt hàng</PageTitle>
 
 <MudPaper>
-    <MudTable Items="mathangs">
+    <MudTable Items="mathangs" Filter="@filterTable">
         <ToolBarContent>
-            <MudText Typo="Typo.h5">Danh sách mặt hàng</MudText>
-            <MudSpacer/>
-            <MudTextField T="string" Label="Tìm kiếm"/>
+            <MudText>Danh sách ngành hàng</MudText>
+            <MudSpacer />
+            <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Tìm kiếm" @bind-Value="searchText" />
         </ToolBarContent>
         <HeaderContent>
             <MudTh>STT</MudTh>
@@ -37,5 +37,18 @@
 
 @code {
     List<Mathang> mathangs = new();
-    
+    string searchText = "";
+    private bool filterTable(Mathang hang)
+    {
+        if (string.IsNullOrEmpty(searchText))
+            return true;
+        foreach (var property in hang.GetType().GetProperties())
+        {
+            if (property.GetValue(hang)?.ToString()?.Contains(searchText) ?? false)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

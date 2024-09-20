@@ -1,4 +1,4 @@
-﻿@page "/Admin/UserManage"
+﻿@page "/Manage/UserManage"
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using System.Security.Claims
@@ -17,7 +17,12 @@
 
 <PageTitle>Quản lý Người dùng</PageTitle>
 
-<MudTable Items="@userFullInfoList">
+<MudTable Items="@userFullInfoList" Filter="@filterTable">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Danh sách người dùng</MudText>
+        <MudSpacer />
+        <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Tìm kiếm" @bind-Value="@searchText" />
+    </ToolBarContent>
     <HeaderContent>
         <MudTh>Email</MudTh>
         <MudTh>Tên người dùng</MudTh>
@@ -55,6 +60,7 @@
 </MudTable>
 
 @code {
+    string searchText = "";
     string roleName = "";
     List<UserFullInfo> userFullInfoList = new();
     List<ApplicationUser> applicationUsers = new();
@@ -127,6 +133,15 @@
     public void NavigateToUserDetail(string id)
     {
         navigate.NavigateTo($"/Manage/UserManage/{id}");
+    }
+
+    private bool filterTable(UserFullInfo user)
+    {
+        if (string.IsNullOrEmpty(searchText))
+            return true;
+        if ((user.User.Email?.ToUpper().Contains(searchText.ToUpper()) ?? false) || (user.Profile.Hoten?.ToUpper().Contains(searchText.ToUpper()) ?? false) || RoleListString(user.Roles).ToUpper().Contains(searchText.ToUpper()))
+            return true;
+        return false;
     }
 
     public string RoleListString(List<string> Roles)

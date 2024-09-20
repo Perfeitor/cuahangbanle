@@ -1,0 +1,72 @@
+﻿@page "/NganhHang/Danhsachnganhhang/{id}"
+
+@using cuahangbanle.Components.Services
+@using cuahangbanle.DBData.Models
+
+@inject NavigationManager Navigation
+@inject INganhhangService nganhHangService
+@inject AuthenticationStateProvider auth
+
+<MudGrid Justify="Justify.Center" Style="height: 60vh; align-content: center;">
+    <MudItem xs="12" sm="10" md="6">
+        <MudPaper Class="p-4">
+            <MudGrid Spacing="1">
+                <MudItem xs="12">
+                    <MudTextField ReadOnly="true" Label="Mã ngành hàng" HelperText="Mã ngành hàng được tạo tự động và không thể sửa" @bind-Value="@nganhhang.Manganhhang"/>
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudTextField T="string" Label="Tên ngành hàng" HelperText="Điền tên ngành hàng" @bind-Value="@nganhhang.Tennganghang"/>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="@Cancel">Huỷ và quay lại</MudButton>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton FullWidth Variant="Variant.Filled" Color="Color.Primary" OnClick="@Save">Lưu</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code{
+    [Parameter]
+    public string? id { get; set; }
+    public Nganhhang nganhhang = new();
+    bool isNew = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        nganhhang = await nganhHangService.GetNganhhangById(id ?? "");
+        if (nganhhang.Manganhhang == "")
+        {
+            isNew = true;
+            nganhhang.Manganhhang = id ?? Guid.NewGuid().ToString();
+        }
+    }
+
+    public void Cancel()
+    {
+        Navigation.NavigateTo("/NganhHang/Danhsachnganhhang");
+    }
+
+    public async Task Save()
+    {
+        var authState = await auth.GetAuthenticationStateAsync();
+        var principal = authState.User;
+        var userId = principal.FindFirst(p => p.Type.Contains("nameidentifier"))?.Value ?? "";
+        if (isNew)
+        {
+            nganhhang.Nguoitao = userId;
+            nganhhang.Ngaytao = DateTime.Now;
+            await nganhHangService.CreateNganhhang(nganhhang);
+        }
+        else
+        {
+            nganhhang.Nguoisua = userId;
+            nganhhang.Ngaysua = DateTime.Now;
+            await nganhHangService.UpdateNganhhang(nganhhang);
+        }
+        Navigation.NavigateTo("/NganhHang/Danhsachnganhhang");
+    }
+}
+
