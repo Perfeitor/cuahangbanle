@@ -1,4 +1,4 @@
-﻿@page "/Mathang/Danhsachmathang"
+﻿@page "/HangHoa/Danhsachmathang"
 @using cuahangbanle.DBData.Models
 
 <PageTitle>Danh sách mặt hàng</PageTitle>
@@ -14,18 +14,22 @@
             <MudTh>STT</MudTh>
             <MudTh>Mã mặt hàng</MudTh>
             <MudTh>Tên mặt hàng</MudTh>
-            <MudTh>Đơn giá</MudTh>
+            <MudTh>Giá nhập</MudTh>
+            <MudTh>Giá bán</MudTh>
             <MudTh>Đơn vị</MudTh>
             <MudTh>Ngành hàng</MudTh>
+            <MudTh>Nhà cung cấp</MudTh>
             <MudTh>Tồn kho</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd>@(mathangs.IndexOf(context) + 1)</MudTd>
             <MudTd>@context.Mamathang</MudTd>
             <MudTd>@context.Tensanpham</MudTd>
+            <MudTd>@context.Gianhap</MudTd>
             <MudTd>@context.Giaban</MudTd>
             <MudTd>@context.Donvitinh</MudTd>
             <MudTd>@context.Nganhhang.Tennganghang</MudTd>
+            <MudTd>@context.TenNCC</MudTd>
             <MudTd>@context.Tonkho</MudTd>
         </RowTemplate>
     </MudTable>
@@ -33,4 +37,5 @@
 
 @code {
     List<Mathang> mathangs = new();
+    
 }

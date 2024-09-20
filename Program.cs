@@ -18,6 +18,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IMathangService, MathangService>();
+builder.Services.AddScoped<INganhhangService, NganhhangService>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
