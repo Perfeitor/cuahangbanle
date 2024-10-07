@@ -1,0 +1,170 @@
+﻿@page "/HangHoa/Danhsachmathang/{id}"
+
+@using cuahangbanle.Components.Services
+@using cuahangbanle.DBData.Models
+@using cuahangbanle.Data.Models
+
+@inject NavigationManager Navigation
+@inject IMathangService mathangService
+@inject INhomhangService nhomhangService
+@inject INganhhangService nganhhangService
+@inject IDonvitinhService donvitinhService
+@inject INhacungcapService nhacungcapService
+@inject AuthenticationStateProvider auth
+@inject ISnackbar Snackbar
+
+<PageTitle>Chi tiết mặt hàng</PageTitle>
+
+<MudGrid Justify="Justify.Center" Style="margin-top: 3vh">
+    <MudItem xs="12" sm="10" md="6">
+        <MudPaper Class="p-4">
+            <MudGrid Spacing="1">
+                <MudItem xs="12">
+                    <MudTextField ReadOnly="true" Label="Mã mặt hàng" HelperText="Mã mặt hàng được tạo tự động và không thể sửa" @bind-Value="@mathang.Mamathang" />
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudTextField T="string" Label="Tên mặt hàng" HelperText="Điền tên mặt hàng" @bind-Value="@mathang.Tensanpham" />
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudSelect T="string" @bind-Value="@mathang.Manhomhang" ShrinkLabel Label="Tên nhóm hàng">
+                        @foreach (var nhomhang in nhomhangs)
+                        {
+                            <MudSelectItem Value="@nhomhang.Manhomhang">@nhomhang.Tennhomhang</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudSelect T="string" @bind-Value="@mathang.Manganhhang" ShrinkLabel Label="Tên ngành hàng">
+                        @foreach (var nganhhang in nganhhangs)
+                        {
+                            <MudSelectItem Value="@nganhhang.Manganhhang">@nganhhang.Tennganghang</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudSelect T="string" @bind-Value="@mathang.MaNCC" @bind-Value:after="@changedNCC" ShrinkLabel Label="Tên nhà cung cấp">
+                        @foreach (var ncc in nhacungcaps)
+                        {
+                            <MudSelectItem Value="@ncc.MaNCC">@ncc.TenNCC</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudTextField T="int" ShrinkLabel InputType="InputType.Number" Label="Tồn kho" @bind-Value="@mathang.Tonkho" />
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudSelect T="string" @bind-Value="@mathang.Madonvitinh" ShrinkLabel Label="Đơn vị tính">
+                        @foreach (var dv in donvitinhs)
+                        {
+                            <MudSelectItem Value="@dv.Madonvitinh">@dv.Donvile/@dv.Donvilon</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6" Class="mb-3">
+                    <MudTextField ShrinkLabel InputType="InputType.Number" Label="Giá nhập" @bind-Value="@mathang.Gianhap" @bind-Value:after="@changedGia"/>
+                </MudItem>
+                <MudItem xs="6" Class="mb-3">
+                    <MudTextField ShrinkLabel InputType="InputType.Number" Label="Giá bán" @bind-Value="@mathang.Giaban" @bind-Value:after="@changedGia" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="@Cancel">Huỷ và quay lại</MudButton>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton FullWidth Variant="Variant.Filled" Color="Color.Primary" OnClick="@Save">Lưu</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public string? id { get; set; }
+    public Mathang mathang = new();
+    public List<Nhomhang> nhomhangs = new();
+    public List<Nganhhang> nganhhangs = new();
+    public List<Donvitinh> donvitinhs = new();
+    public List<Nhacungcap> nhacungcaps = new();
+    bool isNew = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        mathang = await mathangService.GetMathangById(id ?? "");
+        nhomhangs = await nhomhangService.GetAllNhomhang();
+        nganhhangs = await nganhhangService.GetAllNganhhang();
+        donvitinhs = await donvitinhService.GetAllDonvitinh();
+        nhacungcaps = await nhacungcapService.GetAllNhacungcap();
+        if (mathang.Mamathang == "")
+        {
+            isNew = true;
+            mathang.Mamathang = id ?? Guid.NewGuid().ToString();
+        }
+    }
+
+    public void changedNCC()
+    {
+        mathang.TenNCC = nhacungcaps.FirstOrDefault(n => n.MaNCC == mathang.MaNCC)?.TenNCC ?? "";
+    }
+
+    public void changedGia()
+    {
+        if (mathang.Giaban > 0 && mathang.Gianhap > 0)
+        {
+            mathang.Tienlai = mathang.Giaban - mathang.Gianhap;
+            mathang.Phantramlai = (mathang.Tienlai / mathang.Gianhap) * 100;
+        }
+    }
+
+    public void Cancel()
+    {
+        Navigation.NavigateTo("/HangHoa/Danhsachmathang");
+    }
+
+    public bool checkNull()
+    {
+        var properties = mathang.GetType().GetProperties();
+        foreach (var property in properties)
+        {
+            if (property.Name.Contains("Ngay") || property.Name.Contains("Nguoi") || property.Name == "Nganhhang" || property.Name == "Nhomhang" || property.Name == "Nhacungcap" || property.Name == "Donvitinh")
+    {
+                continue;
+            }
+            var value = property.GetValue(mathang);
+            var stringValue = value?.ToString() ?? "";
+            if (string.IsNullOrEmpty(stringValue))
+            {
+                Snackbar.Add("Không được để trống bất cứ trường nào", Severity.Error);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public async Task Save()
+    {
+        var authState = await auth.GetAuthenticationStateAsync();
+        var principal = authState.User;
+        var userId = principal.FindFirst(p => p.Type.Contains("nameidentifier"))?.Value ?? "";
+        if (checkNull())
+        {
+            return;
+        }
+        if (isNew)
+        {
+            mathang.Nguoitao = userId;
+            mathang.Ngaytao = DateTime.Now;
+            await mathangService.CreateMathang(mathang);
+        }
+        else
+        {
+            mathang.Nguoisua = userId;
+            mathang.Ngaysua = DateTime.Now;
+            await mathangService.CreateMathang(mathang);
+        }
+        Navigation.NavigateTo("/HangHoa/Danhsachmathang");
+    }
+}
+
+
+
+

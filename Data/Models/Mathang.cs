@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using cuahangbanle.Data.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace cuahangbanle.DBData.Models
 {
@@ -7,6 +8,7 @@ namespace cuahangbanle.DBData.Models
     {
         public string Mamathang { get; set; } = "";
         public string Manganhhang { get; set; } = "";
+        public string Manhomhang { get; set; } = "";
         public string MaNCC { get; set; } = "";
         public string TenNCC { get; set; } = "";
         public string Tensanpham { get; set; } = "";
@@ -16,9 +18,14 @@ namespace cuahangbanle.DBData.Models
         public decimal Giaban { get; set; }
         public decimal Phantramlai { get; set; }
         public decimal Tienlai { get; set; }
+        public DateTime Ngaytao { get; set; }
+        public string Nguoitao { get; set; } = "";
+        public DateTime? Ngaysua { get; set; }
+        public string? Nguoisua { get; set; }
 
-        public Nganhhang Nganhhang { get; set; }
-        public Nhacungcap Nhacungcap { get; set; }
-        public Donvitinh Donvitinh { get; set; }
+        public Nganhhang? Nganhhang { get; set; }
+        public Nhomhang? Nhomhang { get; set; }
+        public Nhacungcap? Nhacungcap { get; set; }
+        public Donvitinh? Donvitinh { get; set; }
     }
 }

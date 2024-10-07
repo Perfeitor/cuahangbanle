@@ -7,6 +7,7 @@ namespace cuahangbanle.DBData.Models
     {
         public string Madonhang { get; set; } = "";
         public string Mamathang { get; set; } = "";
+        public int Soluong { get; set; }
 
         public Donhang Donhang { get; set; } = new();
         public Mathang Mathang { get; set; } = new();

@@ -1,24 +1,28 @@
-﻿@page "/NganhHang/Danhsachnganhhang/{id}"
+﻿@page "/DonViTinh/Danhsachdonvitinh/{id}"
 
 @using cuahangbanle.Components.Services
 @using cuahangbanle.DBData.Models
+@using cuahangbanle.Data.Models
 
 @inject NavigationManager Navigation
-@inject INganhhangService nganhHangService
+@inject IDonvitinhService donvitinhService
 @inject AuthenticationStateProvider auth
 @inject ISnackbar Snackbar
 
-<PageTitle>Chi tiết ngành hàng</PageTitle>
+<PageTitle>Chi tiết đơn vị tính</PageTitle>
 
-<MudGrid Justify="Justify.Center" Style="height: 60vh; align-content: center;">
+<MudGrid Justify="Justify.Center" Style="margin-top: 3vh">
     <MudItem xs="12" sm="10" md="6">
         <MudPaper Class="p-4">
             <MudGrid Spacing="1">
                 <MudItem xs="12">
-                    <MudTextField ReadOnly="true" Label="Mã ngành hàng" HelperText="Mã ngành hàng được tạo tự động và không thể sửa" @bind-Value="@nganhhang.Manganhhang"/>
+                    <MudTextField ReadOnly="true" Label="Mã đơn vị tính" HelperText="Mã đơn vị tính được tạo tự động và không thể sửa" @bind-Value="@donvi.Madonvitinh" />
                 </MudItem>
                 <MudItem xs="12" Class="mb-3">
-                    <MudTextField T="string" Label="Tên ngành hàng" HelperText="Điền tên ngành hàng" @bind-Value="@nganhhang.Tennganghang"/>
+                    <MudTextField T="string" Label="Đơn vị lẻ" HelperText="Điền tên đơn vị tính" @bind-Value="@donvi.Donvile" />
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudTextField T="string" Label="Đơn vị lớn" HelperText="Điền tên đơn vị tính" @bind-Value="@donvi.Donvilon" />
                 </MudItem>
                 <MudItem xs="6">
                     <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="@Cancel">Huỷ và quay lại</MudButton>
@@ -31,32 +35,32 @@
     </MudItem>
 </MudGrid>
 
-@code{
+@code {
     [Parameter]
     public string? id { get; set; }
-    public Nganhhang nganhhang = new();
+    public Donvitinh donvi = new();
     bool isNew = false;
 
     protected override async Task OnInitializedAsync()
     {
-        nganhhang = await nganhHangService.GetNganhhangById(id ?? "");
-        if (nganhhang.Manganhhang == "")
+        donvi = await donvitinhService.GetDonvitinhById(id ?? "");
+        if (donvi.Madonvitinh == "")
         {
             isNew = true;
-            nganhhang.Manganhhang = id ?? Guid.NewGuid().ToString();
+            donvi.Madonvitinh = id ?? Guid.NewGuid().ToString();
         }
     }
 
     public void Cancel()
     {
-        Navigation.NavigateTo("/NganhHang/Danhsachnganhhang");
+        Navigation.NavigateTo("/DonViTinh/Danhsachdonvitinh");
     }
 
     public bool checkNameNull()
     {
-        if (string.IsNullOrEmpty(nganhhang.Tennganghang))
+        if (string.IsNullOrEmpty(donvi.Donvile) || string.IsNullOrEmpty(donvi.Donvilon))
         {
-            Snackbar.Add("Tên ngành không được để trống", Severity.Error);
+            Snackbar.Add("Đơn vị tính không được để trống", Severity.Error);
             return true;
         }
         return false;
@@ -73,17 +77,19 @@
         }
         if (isNew)
         {
-            nganhhang.Nguoitao = userId;
-            nganhhang.Ngaytao = DateTime.Now;
-            await nganhHangService.CreateNganhhang(nganhhang);
+            donvi.Nguoitao = userId;
+            donvi.Ngaytao = DateTime.Now;
+            await donvitinhService.CreateDonvitinh(donvi);
         }
         else
         {
-            nganhhang.Nguoisua = userId;
-            nganhhang.Ngaysua = DateTime.Now;
-            await nganhHangService.UpdateNganhhang(nganhhang);
+            donvi.Nguoisua = userId;
+            donvi.Ngaysua = DateTime.Now;
+            await donvitinhService.CreateDonvitinh(donvi);
         }
-        Navigation.NavigateTo("/NganhHang/Danhsachnganhhang");
+        Navigation.NavigateTo("/DonViTinh/Danhsachdonvitinh");
     }
 }
+
+
 

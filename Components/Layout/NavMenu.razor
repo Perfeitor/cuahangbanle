@@ -10,13 +10,21 @@
 @inject AuthenticationStateProvider auth
 
 <MudNavMenu>
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
-    <MudNavLink Href="/Manage/UserManage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Quản lý người dùng</MudNavLink>
-    <MudNavLink Href="/Manage/RoleManage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SettingsAccessibility">Quản lý quyền</MudNavLink>
-    <MudNavLink Href="/HangHoa/Danhsachmathang" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ViewList">Danh sách mặt hàng</MudNavLink>
-    <MudNavLink Href="/NganhHang/Danhsachnganhhang" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ViewList">Danh sách ngành hàng</MudNavLink>
+    <MudNavLink Disabled Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+    <MudNavGroup Expanded="false" Icon="@Icons.Material.Filled.AdminPanelSettings" Title="Chức năng admin">
+        <MudNavLink Href="AdminRequired" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Yêu cầu quyền Admin</MudNavLink>
+        <MudNavLink Href="/Manage/UserManage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Quản lý người dùng</MudNavLink>
+        <MudNavLink Href="/Manage/RoleManage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SettingsAccessibility">Quản lý quyền</MudNavLink>
+    </MudNavGroup>
+    <MudNavGroup Expanded="false" Icon="@Icons.Material.Filled.AdminPanelSettings" Title="Chức năng manager">
+        <MudNavLink Href="/HangHoa/Danhsachmathang" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ViewList">Danh sách mặt hàng</MudNavLink>
+        <MudNavLink Href="/NganhHang/Danhsachnganhhang" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ViewList">Danh sách ngành hàng</MudNavLink>
+        <MudNavLink Href="/NhomHang/Danhsachnhomhang" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ViewList">Danh sách nhóm hàng</MudNavLink>
+        <MudNavLink Href="/DonViTinh/Danhsachdonvitinh" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ViewList">Danh sách đơn vị tính</MudNavLink>
+        <MudNavLink Href="/NhaCungCap/Danhsachnhacungcap" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ViewList">Danh sách nhà cung cấp</MudNavLink>
+    </MudNavGroup>
+    <MudNavLink Href="DonHang/Danhsachdonhang" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ViewList">Danh sách đơn hàng</MudNavLink>
     <MudNavLink Href="auth" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Yêu cầu đăng nhập</MudNavLink>
-    <MudNavLink Href="AdminRequired" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Lock">Yêu cầu quyền Admin</MudNavLink>
     <AuthorizeView>
         <Authorized>
             <MudNavLink Href="Account/Manage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">@userName</MudNavLink>
@@ -66,7 +74,6 @@
         var profile = await userProfileService.GetUserProfileById(UserID ?? "");
         return profile?.Hoten ?? "";
     }
-}
 }
 
 

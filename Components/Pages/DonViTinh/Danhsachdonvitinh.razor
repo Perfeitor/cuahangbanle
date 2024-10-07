@@ -1,28 +1,30 @@
-﻿@page "/NganhHang/Danhsachnganhhang"
+﻿@page "/DonViTinh/Danhsachdonvitinh"
 @using Microsoft.AspNetCore.Identity
 @using cuahangbanle.Components.Services
 @using cuahangbanle.DBData.Models
 @using cuahangbanle.Data
+@using cuahangbanle.Data.Models
 
 @inject AuthenticationStateProvider auth
-@inject INganhhangService nganhHangService
+@inject IDonvitinhService donvitinhService
 @inject UserManager<ApplicationUser> _userManager
 @inject NavigationManager _navi
 @inject IUserProfileService userProfileService
 
-<PageTitle>Danh sách ngành hàng</PageTitle>
+<PageTitle>Danh sách đơn vị tính</PageTitle>
 
 <MudPaper>
-    <MudTable Breakpoint="Breakpoint.None" Items="@nganhhangs" Filter="@filterTable" Virtualize>
+    <MudTable Breakpoint="Breakpoint.None" Items="@donvitinhs" Filter="@filterTable" Virtualize>
         <ToolBarContent>
-            <MudText>Danh sách ngành hàng</MudText>
-            <MudSpacer/>
-            <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Tìm kiếm" @bind-Value="searchText"/>
+            <MudText>Danh sách đơn vị tính</MudText>
+            <MudSpacer />
+            <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Tìm kiếm" @bind-Value="searchText" />
         </ToolBarContent>
         <HeaderContent>
             <MudTh>STT</MudTh>
-            <MudTh>Mã ngành</MudTh>
-            <MudTh>Tên ngành</MudTh>
+            <MudTh>Mã đơn vị tính</MudTh>
+            <MudTh>Đơn vị lẻ</MudTh>
+            <MudTh>Đơn vị lớn</MudTh>
             <MudTh>Người tạo</MudTh>
             <MudTh>Ngày tạo</MudTh>
             <MudTh>Người sửa</MudTh>
@@ -30,9 +32,10 @@
             <MudTh>Quản lý</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd>@(nganhhangs.IndexOf(context)+1)</MudTd>
-            <MudTd>@context.Manganhhang</MudTd>
-            <MudTd>@context.Tennganghang</MudTd>
+            <MudTd>@(donvitinhs.IndexOf(context) + 1)</MudTd>
+            <MudTd>@context.Madonvitinh</MudTd>
+            <MudTd>@context.Donvile</MudTd>
+            <MudTd>@context.Donvilon</MudTd>
             <MudTd>@(userProfiles.FirstOrDefault(p => p.UserId == context.Nguoitao.ToString())?.Hoten ?? "")</MudTd>
             <MudTd>@context.Ngaytao.ToString("dd/MM/yyyy")</MudTd>
             <MudTd>@(userProfiles.FirstOrDefault(p => p.UserId == context.Nguoisua?.ToString())?.Hoten ?? "")</MudTd>
@@ -40,7 +43,7 @@
             <MudTd>
                 <MudMenu AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
                     <ActivatorContent>
-                        <MudIconButton Icon="@Icons.Material.Filled.MoreVert"/>
+                        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" />
                     </ActivatorContent>
                     <ChildContent>
                         <MudNavMenu>
@@ -48,7 +51,7 @@
                                 <MudButton FullWidth Disabled="@isDisable" OnClick="@(() => Delete(context))">Xoá</MudButton>
                             </MudNavLink>
                             <MudNavLink>
-                                <MudButton FullWidth Disabled="@isDisable" OnClick="@(() => Update(context.Manganhhang))">Sửa</MudButton>
+                                <MudButton FullWidth Disabled="@isDisable" OnClick="@(() => Update(context.Madonvitinh))">Sửa</MudButton>
                             </MudNavLink>
                         </MudNavMenu>
                     </ChildContent>
@@ -65,46 +68,47 @@
 @code {
     bool isDisable = true;
     string searchText = "";
-    List<Nganhhang> nganhhangs = new();
+    List<Donvitinh> donvitinhs = new();
     List<UserProfile> userProfiles = new();
 
     protected override async Task OnInitializedAsync()
     {
         userProfiles = await userProfileService.GetAllProfile();
-        nganhhangs = await nganhHangService.GetAllNganhhang();
+        donvitinhs = await donvitinhService.GetAllDonvitinh();
         var authState = await auth.GetAuthenticationStateAsync();
         var principal = authState.User;
         var userId = principal.FindFirst(p => p.Type.Contains("nameidentifier"))?.Value ?? "";
         var currentUser = await _userManager.FindByIdAsync(userId) ?? new();
         var roles = await _userManager.GetRolesAsync(currentUser);
-        if(roles.Contains("Admin") || roles.Contains("Manager")){
+        if (roles.Contains("Admin") || roles.Contains("Manager"))
+        {
             isDisable = false;
         }
     }
 
-    public async Task Delete(Nganhhang nganh)
+    public async Task Delete(Donvitinh donvi)
     {
-        await nganhHangService.RemoveNganhhang(nganh);
-        nganhhangs = await nganhHangService.GetAllNganhhang();
+        await donvitinhService.RemoveDonvitinh(donvi);
+        donvitinhs = await donvitinhService.GetAllDonvitinh();
     }
 
     public void Update(string id)
     {
-        _navi.NavigateTo($"/NganhHang/Danhsachnganhhang/{id}");
+        _navi.NavigateTo($"/DonViTinh/Danhsachdonvitinh/{id}");
     }
 
     public void Create()
     {
-        _navi.NavigateTo($"/NganhHang/Danhsachnganhhang/{Guid.NewGuid().ToString()}");
+        _navi.NavigateTo($"/DonViTinh/Danhsachdonvitinh/{Guid.NewGuid().ToString()}");
     }
 
-    private bool filterTable(Nganhhang nganh)
+    private bool filterTable(Donvitinh donvi)
     {
         if (string.IsNullOrEmpty(searchText))
             return true;
-        foreach(var property in nganh.GetType().GetProperties())
+        foreach (var property in donvi.GetType().GetProperties())
         {
-            if (property.GetValue(nganh)?.ToString()?.Contains(searchText) ?? false)
+            if (property.GetValue(donvi)?.ToString()?.Contains(searchText) ?? false)
             {
                 return true;
             }

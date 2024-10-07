@@ -1,12 +1,25 @@
 ﻿@page "/HangHoa/Danhsachmathang"
+@using Microsoft.AspNetCore.Identity
+@using cuahangbanle.Components.Services
 @using cuahangbanle.DBData.Models
+@using cuahangbanle.Data
+@using cuahangbanle.Data.Models
+
+@inject AuthenticationStateProvider auth
+@inject IMathangService mathangService
+@inject IDonvitinhService donvitinhService
+@inject INganhhangService nganhhangService
+@inject INhomhangService nhomhangService
+@inject UserManager<ApplicationUser> _userManager
+@inject NavigationManager _navi
+@inject IUserProfileService userProfileService
 
 <PageTitle>Danh sách mặt hàng</PageTitle>
 
 <MudPaper>
-    <MudTable Items="mathangs" Filter="@filterTable">
+    <MudTable Breakpoint="Breakpoint.None" Items="@mathangs" Filter="@filterTable" Virtualize>
         <ToolBarContent>
-            <MudText>Danh sách ngành hàng</MudText>
+            <MudText>Danh sách mặt hàng</MudText>
             <MudSpacer />
             <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Tìm kiếm" @bind-Value="searchText" />
         </ToolBarContent>
@@ -14,37 +27,111 @@
             <MudTh>STT</MudTh>
             <MudTh>Mã mặt hàng</MudTh>
             <MudTh>Tên mặt hàng</MudTh>
-            <MudTh>Giá nhập</MudTh>
-            <MudTh>Giá bán</MudTh>
-            <MudTh>Đơn vị</MudTh>
+            <MudTh>Nhóm hàng</MudTh>
             <MudTh>Ngành hàng</MudTh>
             <MudTh>Nhà cung cấp</MudTh>
+            <MudTh>Đơn vị lẻ</MudTh>
+            <MudTh>Đơn vị lớn</MudTh>
             <MudTh>Tồn kho</MudTh>
+            <MudTh>Giá nhập</MudTh>
+            <MudTh>Giá bán</MudTh>
+            <MudTh>Người tạo</MudTh>
+            <MudTh>Ngày tạo</MudTh>
+            <MudTh>Người sửa</MudTh>
+            <MudTh>Ngày sửa</MudTh>
+            <MudTh>Quản lý</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd>@(mathangs.IndexOf(context) + 1)</MudTd>
             <MudTd>@context.Mamathang</MudTd>
             <MudTd>@context.Tensanpham</MudTd>
-            <MudTd>@context.Gianhap</MudTd>
-            <MudTd>@context.Giaban</MudTd>
-            <MudTd>@context.Donvitinh</MudTd>
-            <MudTd>@context.Nganhhang.Tennganghang</MudTd>
+            <MudTd>@(nhomhangs.FirstOrDefault(p => p.Manhomhang == context.Manhomhang.ToString())?.Tennhomhang ?? "")</MudTd>
+            <MudTd>@(nganhhangs.FirstOrDefault(p => p.Manganhhang == context.Manganhhang.ToString())?.Tennganghang ?? "")</MudTd>
             <MudTd>@context.TenNCC</MudTd>
-            <MudTd>@context.Tonkho</MudTd>
+            <MudTd>@(donvitinhs.FirstOrDefault(p => p.Madonvitinh == context.Madonvitinh.ToString())?.Donvile ?? "")</MudTd>
+            <MudTd>@(donvitinhs.FirstOrDefault(p => p.Madonvitinh == context.Madonvitinh.ToString())?.Donvilon ?? "")</MudTd>
+            <MudTd>@(context.Tonkho.ToString() ?? "0")</MudTd>
+            <MudTd>@(context.Gianhap.ToString() ?? "")</MudTd>
+            <MudTd>@(context.Giaban.ToString() ?? "")</MudTd>
+            <MudTd>@(userProfiles.FirstOrDefault(p => p.UserId == context.Nguoitao.ToString())?.Hoten ?? "")</MudTd>
+            <MudTd>@context.Ngaytao.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd>@(userProfiles.FirstOrDefault(p => p.UserId == context.Nguoisua?.ToString())?.Hoten ?? "")</MudTd>
+            <MudTd>@(context.Ngaysua?.ToString("dd/MM/yyyy") ?? "")</MudTd>
+            <MudTd>
+                <MudMenu AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
+                    <ActivatorContent>
+                        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" />
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudNavMenu>
+                            <MudNavLink>
+                                <MudButton FullWidth Disabled="@isDisable" OnClick="@(() => Delete(context))">Xoá</MudButton>
+                            </MudNavLink>
+                            <MudNavLink>
+                                <MudButton FullWidth Disabled="@isDisable" OnClick="@(() => Update(context.Madonvitinh))">Sửa</MudButton>
+                            </MudNavLink>
+                        </MudNavMenu>
+                    </ChildContent>
+                </MudMenu>
+            </MudTd>
         </RowTemplate>
     </MudTable>
 </MudPaper>
 
+<MudTooltip Duration="1000" Delay="100" ShowOnHover Arrow Placement="Placement.Left" Text="Thêm ngành ngành">
+    <MudIconButton OnClick="@Create" Disabled="@isDisable" Class="rounded-circle" Color="Color.Tertiary" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Add" Size="Size.Large" />
+</MudTooltip>
+
 @code {
-    List<Mathang> mathangs = new();
+    bool isDisable = true;
     string searchText = "";
-    private bool filterTable(Mathang hang)
+    List<Mathang> mathangs = new();
+    List<UserProfile> userProfiles = new();
+    List<Donvitinh> donvitinhs = new();
+    List<Nganhhang> nganhhangs = new();
+    List<Nhomhang> nhomhangs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        userProfiles = await userProfileService.GetAllProfile();
+        mathangs = await mathangService.GetAllMathang();
+        donvitinhs = await donvitinhService.GetAllDonvitinh();
+        nganhhangs = await nganhhangService.GetAllNganhhang();
+        nhomhangs = await nhomhangService.GetAllNhomhang();
+        var authState = await auth.GetAuthenticationStateAsync();
+        var principal = authState.User;
+        var userId = principal.FindFirst(p => p.Type.Contains("nameidentifier"))?.Value ?? "";
+        var currentUser = await _userManager.FindByIdAsync(userId) ?? new();
+        var roles = await _userManager.GetRolesAsync(currentUser);
+        if (roles.Contains("Admin") || roles.Contains("Manager"))
+        {
+            isDisable = false;
+        }
+    }
+
+    public async Task Delete(Mathang donvi)
+    {
+        await mathangService.RemoveMathang(donvi);
+        mathangs = await mathangService.GetAllMathang();
+    }
+
+    public void Update(string id)
+    {
+        _navi.NavigateTo($"/HangHoa/Danhsachmathang/{id}");
+    }
+
+    public void Create()
+    {
+        _navi.NavigateTo($"/HangHoa/Danhsachmathang/{Guid.NewGuid().ToString()}");
+    }
+
+    private bool filterTable(Mathang donvi)
     {
         if (string.IsNullOrEmpty(searchText))
             return true;
-        foreach (var property in hang.GetType().GetProperties())
+        foreach (var property in donvi.GetType().GetProperties())
         {
-            if (property.GetValue(hang)?.ToString()?.Contains(searchText) ?? false)
+            if (property.GetValue(donvi)?.ToString()?.Contains(searchText) ?? false)
             {
                 return true;
             }
@@ -52,3 +139,12 @@
         return false;
     }
 }
+
+<style>
+    .mud-tooltip-root.mud-tooltip-inline {
+        position: absolute;
+        right: 5vw;
+        top: 80vh;
+        transform: scale(1.2);
+    }
+</style>

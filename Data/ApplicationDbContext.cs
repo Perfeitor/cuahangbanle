@@ -1,3 +1,4 @@
+using cuahangbanle.Data.Models;
 using cuahangbanle.DBData.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Mathang> Mathangs { get; set; }
     public DbSet<Donhang> Donhangs { get; set; }
     public DbSet<DsMatHang> DsMatHangs { get; set; }
+    public DbSet<Nhomhang> Nhomhangs { get; set; }
     #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -40,6 +42,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasKey(n => n.Manganhhang);
         #endregion
 
+        #region Nhomhang
+        modelBuilder.Entity<Nhomhang>()
+            .HasKey(n => n.Manhomhang);
+        #endregion
+
         #region Nhacungcap
         modelBuilder.Entity<Nhacungcap>()
             .HasKey(n => n.MaNCC);
@@ -58,6 +65,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(m => m.Nganhhang)
             .WithMany()
             .HasForeignKey(m => m.Manganhhang)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Mathang>()
+            .HasOne(m => m.Nhomhang)
+            .WithMany()
+            .HasForeignKey(m => m.Manhomhang)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Mathang>()

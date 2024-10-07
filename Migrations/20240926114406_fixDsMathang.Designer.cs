@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using cuahangbanle.Data;
 
@@ -11,9 +12,11 @@ using cuahangbanle.Data;
 namespace cuahangbanle.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240926114406_fixDsMathang")]
+    partial class fixDsMathang
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,17 +166,10 @@ namespace cuahangbanle.Migrations
                     b.Property<bool>("Kieudonhang")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("Ngaysua")
+                    b.Property<DateTime?>("Ngaytao")
                         .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("Ngaytao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nguoisua")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Nguoitao")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("Tienhang")
@@ -197,19 +193,6 @@ namespace cuahangbanle.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Donvilon")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("Ngaysua")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("Ngaytao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nguoisua")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Nguoitao")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -262,19 +245,6 @@ namespace cuahangbanle.Migrations
                     b.Property<string>("Manhomhang")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("Ngaysua")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("Ngaytao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nguoisua")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Nguoitao")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Phantramlai")
                         .HasColumnType("decimal(18,2)");

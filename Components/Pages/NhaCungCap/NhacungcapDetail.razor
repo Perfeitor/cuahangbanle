@@ -1,0 +1,100 @@
+﻿@page "/NhaCungCap/Danhsachnhacungcap/{id}"
+
+@using cuahangbanle.Components.Services
+@using cuahangbanle.DBData.Models
+@using cuahangbanle.Data.Models
+
+@inject NavigationManager Navigation
+@inject INhacungcapService nhaCungCapService
+@inject AuthenticationStateProvider auth
+@inject ISnackbar Snackbar
+
+<PageTitle>Chi tiết nhà cung cấp</PageTitle>
+
+<MudGrid Justify="Justify.Center" Style="margin-top: 3vh">
+    <MudItem xs="12" sm="10" md="6">
+        <MudPaper Class="p-4">
+            <MudGrid Spacing="1">
+                <MudItem xs="12">
+                    <MudTextField ReadOnly="true" Label="Mã nhà cung cấp" HelperText="Mã nhà cung cấp được tạo tự động và không thể sửa" @bind-Value="@nhacungcap.MaNCC" />
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudTextField T="string" Label="Tên nhà cung cấp" HelperText="Điền tên nhà cung cấp" @bind-Value="@nhacungcap.TenNCC" />
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudTextField T="string" Label="Địa chỉ nhà cung cấp" HelperText="Điền địa chỉ nhà cung cấp" @bind-Value="@nhacungcap.Diachi" />
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudTextField T="string" Label="SĐT nhà cung cấp" HelperText="Điền sđt nhà cung cấp" @bind-Value="@nhacungcap.Dienthoai" />
+                </MudItem>
+                <MudItem xs="12" Class="mb-3">
+                    <MudTextField T="string" Label="Email nhà cung cấp" HelperText="Điền email nhà cung cấp" @bind-Value="@nhacungcap.Email" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="@Cancel">Huỷ và quay lại</MudButton>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton FullWidth Variant="Variant.Filled" Color="Color.Primary" OnClick="@Save">Lưu</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public string? id { get; set; }
+    public Nhacungcap nhacungcap = new();
+    bool isNew = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        nhacungcap = await nhaCungCapService.GetNhacungcapById(id ?? "");
+        if (nhacungcap.MaNCC == "")
+        {
+            isNew = true;
+            nhacungcap.MaNCC = id ?? Guid.NewGuid().ToString();
+        }
+    }
+
+    public void Cancel()
+    {
+        Navigation.NavigateTo("/NhaCungCap/Danhsachnhacungcap");
+    }
+
+    public bool checkNameNull()
+    {
+        if (string.IsNullOrEmpty(nhacungcap.TenNCC))
+        {
+            Snackbar.Add("Tên nhà cung cấp không được để trống", Severity.Error);
+            return true;
+        }
+        return false;
+    }
+
+    public async Task Save()
+    {
+        var authState = await auth.GetAuthenticationStateAsync();
+        var principal = authState.User;
+        var userId = principal.FindFirst(p => p.Type.Contains("nameidentifier"))?.Value ?? "";
+        if (checkNameNull())
+        {
+            return;
+        }
+        if (isNew)
+        {
+            nhacungcap.Nguoitao = userId;
+            nhacungcap.Ngaytao = DateTime.Now;
+            await nhaCungCapService.CreateNhacungcap(nhacungcap);
+        }
+        else
+        {
+            nhacungcap.Nguoisua = userId;
+            nhacungcap.Ngaysua = DateTime.Now;
+            await nhaCungCapService.CreateNhacungcap(nhacungcap);
+        }
+        Navigation.NavigateTo("/NhaCungCap/Danhsachnhacungcap");
+    }
+}
+
+
