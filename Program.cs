@@ -23,6 +23,7 @@ builder.Services.AddScoped<INganhhangService, NganhhangService>();
 builder.Services.AddScoped<INhomhangService, NhomhangService>();
 builder.Services.AddScoped<INhacungcapService, NhacungcapService>();
 builder.Services.AddScoped<IDonvitinhService, DonvitinhService>();
+builder.Services.AddScoped<IDonhangService, DonhangService>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();

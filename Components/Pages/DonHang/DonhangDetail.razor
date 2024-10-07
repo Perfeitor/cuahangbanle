@@ -1,0 +1,177 @@
+﻿@page "/DonHang/Danhsachdonhang/{id}"
+
+@using cuahangbanle.Components.Services
+@using cuahangbanle.DBData.Models
+@using cuahangbanle.Data.Models
+
+@inject NavigationManager Navigation
+@inject IDonhangService donhangService
+@inject IMathangService mathangService
+@inject AuthenticationStateProvider auth
+@inject ISnackbar Snackbar
+
+<PageTitle>Chi tiết đơn hàng</PageTitle>
+
+<MudGrid Justify="Justify.Center" Spacing="1" Style="margin-top: 3vh">
+    <MudItem xs="12" md="6">
+        <MudPaper Class="p-4">
+            <MudGrid Spacing="1">
+                <MudItem xs="12">
+                    <MudTextField ReadOnly="true" Label="Mã đơn hàng" HelperText="Mã đơn hàng được tạo tự động và không thể sửa" @bind-Value="@donhang.Madonhang" />
+                </MudItem>
+                <MudItem xs="6" Class="mb-3">
+                    <MudTextField ReadOnly InputType="InputType.Number" Label="Tiền hàng" HelperText="Tiền hàng" @bind-Value="@donhang.Tienhang" />
+                </MudItem>
+                <MudItem xs="6" Class="mb-3">
+                    <MudTextField InputType="InputType.Number" Label="Tiền trả lại" HelperText="Tiền trả lại" @bind-Value="@donhang.Tientralai" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudPaper Class="p-4">
+            <MudGrid Spacing="1">
+                <MudItem xs="6" Class="mb-3">
+                    <MudAutocomplete T="Mathang" Label="Chọn mặt hàng" ShrinkLabel ToStringFunc="@(m => m?.Tensanpham ?? "")" SearchFunc="searchMathang"/>
+                </MudItem>
+                <MudItem xs="6" Class="mb-3">
+                    <MudTextField InputType="InputType.Number" Label="Số lượng" HelperText="Tiền trả lại" @bind-Value="@newDs.Soluong" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudButton FullWidth Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddDs">Thêm</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" Class="mb-3">
+        <MudGrid Spacing="1">
+            <MudItem xs="6">
+                <MudButton FullWidth Variant="Variant.Filled" Color="Color.Error" OnClick="@Cancel">Huỷ và quay lại</MudButton>
+            </MudItem>
+            <MudItem xs="6">
+                <MudButton FullWidth Variant="Variant.Filled" Color="Color.Primary" OnClick="@Save">Lưu</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+    <MudItem xs="12">
+        <MudTable Breakpoint="Breakpoint.None" Items="@dsmathangs" Filter="@filterTable" Virtualize>
+            <ToolBarContent>
+                <MudText>Danh sách mặt hàng</MudText>
+                <MudSpacer />
+                <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Tìm kiếm" @bind-Value="searchText" />
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>STT</MudTh>
+                <MudTh>Mã mặt hàng</MudTh>
+                <MudTh>Tên mặt hàng</MudTh>
+                <MudTh>Số lượng</MudTh>
+                <MudTh>Thành tiền</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@(dsmathangs.IndexOf(context) + 1)</MudTd>
+                <MudTd>@context.Mamathang</MudTd>
+                <MudTd>@(mathangs.FirstOrDefault(m => m.Mamathang == context.Mamathang)?.Tensanpham ?? "")</MudTd>
+                <MudTd>@context.Soluong</MudTd>
+                <MudTd>@thanhtien(context)</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudItem>
+</MudGrid>
+@code {
+    [Parameter]
+    public string? id { get; set; }
+    public Donhang donhang = new();
+    public string searchText = "";
+    public DsMatHang newDs = new();
+    public List<DsMatHang> dsmathangs = new();
+    public List<Mathang> mathangs = new();
+    bool isNew = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        donhang = await donhangService.GetDonhangById(id ?? "");
+        dsmathangs = await donhangService.GetDsMathangByDonhangId(id ?? "");
+        mathangs = await mathangService.GetAllMathang();
+        if (donhang.Madonhang == "")
+        {
+            isNew = true;
+            donhang.Madonhang = id ?? Guid.NewGuid().ToString();
+        }
+    }
+
+    public void AddDs()
+    {
+        donhangService.CreateDsMathang(newDs);
+    }
+
+    private Task<IEnumerable<Mathang>> searchMathang(string value, CancellationToken token)
+    {
+        IEnumerable<Mathang> result = Enumerable.Empty<Mathang>();
+        if (string.IsNullOrEmpty(value))
+            return Task.FromResult(result);
+        result = mathangs.Where(m => m.Tensanpham.Contains(value ?? "", StringComparison.CurrentCultureIgnoreCase));
+        return Task.FromResult(result);
+    }
+
+    private string thanhtien(DsMatHang hang)
+    {
+        return (hang.Soluong * (mathangs.FirstOrDefault(m => m.Mamathang == hang.Mamathang)?.Giaban ?? 0)).ToString("F0");
+    }
+
+    private bool filterTable(DsMatHang hang)
+    {
+        if (string.IsNullOrEmpty(searchText))
+            return true;
+        foreach (var property in hang.GetType().GetProperties())
+        {
+            if (property.GetValue(hang)?.ToString()?.Contains(searchText) ?? false)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void Cancel()
+    {
+        Navigation.NavigateTo("/DonHang/Danhsachdonhang");
+    }
+
+    public bool checkNameNull()
+    {
+        if (dsmathangs.Count <= 0)
+        {
+            Snackbar.Add("Không có mặt hàng nào", Severity.Error);
+            return true;
+        }
+        return false;
+    }
+
+    public async Task Save()
+    {
+        var authState = await auth.GetAuthenticationStateAsync();
+        var principal = authState.User;
+        var userId = principal.FindFirst(p => p.Type.Contains("nameidentifier"))?.Value ?? "";
+        if (checkNameNull())
+        {
+            return;
+        }
+        if (isNew)
+        {
+            donhang.Nguoitao = userId;
+            donhang.Ngaytao = DateTime.Now;
+            await donhangService.CreateDonhang(donhang);
+        }
+        else
+        {
+            donhang.Nguoisua = userId;
+            donhang.Ngaysua = DateTime.Now;
+            await donhangService.CreateDonhang(donhang);
+        }
+        Navigation.NavigateTo("/DonHang/Danhsachdonhang");
+    }
+}
+
+
+
+
